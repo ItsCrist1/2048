@@ -1,7 +1,9 @@
 #include "game.h"
 #include "utils.h"
 
+#include <cstdlib>
 #include <iostream>
+#include <filesystem>
 
 #ifdef _WIN32
 #include <windows.h>
@@ -11,8 +13,11 @@
 #include <unistd.h>
 #endif
 
+namespace fs = std::filesystem;
+
 const RGB SelectedColor = RGB(245,212,66);
 const RGB UnselectedColor = RGB(112,109,96);
+const std::string SaveDirectory = "saves";
 
 void draw(const u32& idx) {
     std::wcout << ANSI_CLEAR;
@@ -25,15 +30,17 @@ void draw(const u32& idx) {
 i32 main(i32 argc, char *argv[]) {
     if(argc > 1) {
         for(u32 i=1; i < argc; i++) {
-            if(std::string(argv[i]) == "--nocolor") useCol = 0;
+            const std::string arg = std::string(argv[i]);
+            if(arg == "--nocolor") useCol = 0;
         }
     }
 
+    if(!fs::is_directory(SaveDirectory)) fs::create_directory(SaveDirectory);
+
 	#ifdef _WIN32
-	SetConsoleOutputCP(CP_UTF8); // set UTF-8 locale for windows
+	SetConsoleOutputCP(CP_UTF8);
 	#else
-	std::locale::global(std::locale("")); // set default locale for unix
-    // set one character input with no echo in unix
+	std::locale::global(std::locale(""));
 	struct termios oldt, newt;
 	tcgetattr(STDIN_FILENO, &oldt);
     newt = oldt;
@@ -56,7 +63,9 @@ i32 main(i32 argc, char *argv[]) {
 
             case ' ':
             switch(idx) {
-                case 0: Game(4); break;
+                case 0: 
+                // TODO
+                break;
                 case 2: f = false; break;
             } break;
 
@@ -65,9 +74,8 @@ i32 main(i32 argc, char *argv[]) {
     }
 
 	#ifndef _WIN32
-    // disable one character input in unix
 	tcsetattr(STDIN_FILENO, TCSANOW, &oldt);
 	#endif
 
-    return 0;
+    return EXIT_SUCCESS;
 }

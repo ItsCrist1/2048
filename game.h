@@ -5,36 +5,40 @@
 
 #include <cstdint>
 #include <string>
-#include <vector>
 #include <unordered_map>
 #include <random>
-
-using u_board = std::vector<std::vector<u32>>;
-using b_board = std::vector<std::vector<bool>>;
 
 u32 cifCount(const u32& n);
 u32 getBiggest(const u_board&);
 
 class Game {
 public:
-    Game(const u32& BOARD_SZ=4, const u_board* ib=nullptr, const u32& ic=2);
+    Game(const Gamesave&);
 
 private:
-    const std::unordered_map<u32,RGB> COLS;
+    const std::unordered_map<u32,RGB> COLS {
+        { 2, RGB(238, 228, 218) },
+        { 4, RGB(237, 224, 200) },
+        { 8, RGB(242, 177, 121) },
+        { 16, RGB(245, 149, 99) },
+        { 32, RGB(246, 124, 95) },
+        { 64, RGB(246, 94, 59) },
+        { 128, RGB(237, 207, 114) },
+        { 256, RGB(237, 204, 97) },
+        { 512, RGB(237, 200, 80) },
+        { 1024, RGB(237, 197, 63) },
+        { 2048, RGB(237, 194, 46) }
+    };
     const u32 BICSZ;
-    const u32 BOARD_SZ;
-    const RGB TitleColor;
-    const RGB GameOverColor;
-    const RGB ScoreColor;
-    const RGB BiggestCellColor;
-    const RGB NewColor;
-    const std::wstring TBL_CRS;
-
-    std::mt19937 rng;
-    u_board b;
-    u32 biggest, biggestCell, score;
-    std::pair<u32,u32> newp;
-    bool moved;
+    const RGB TitleColor = RGB(17,85,194);
+    const RGB GameOverColor = RGB(168,3,3);
+    const RGB ScoreColor = RGB(219,222,47);
+    const RGB BiggestCellColor = RGB(47,198,222);
+    const RGB NewColor = RGB(220,227,25);
+    const std::wstring TBL_CRS = L"─│┌┐└┘┴┬├┤┼";
+    
+    Gamesave s;
+    std::mt19937 rng = std::mt19937(std::random_device{}());
 
     void DrawBoard();
     bool Slide(const char&);
