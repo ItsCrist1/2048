@@ -1,9 +1,12 @@
 #include "game.h"
 #include "utils.h"
 
+#include <cctype>
 #include <cstdlib>
-#include <iostream>
 #include <filesystem>
+#include <iostream>
+#include <string>
+#include <vector>
 
 #ifdef _WIN32
 #include <windows.h>
@@ -13,11 +16,22 @@
 #include <unistd.h>
 #endif
 
-namespace fs = std::filesystem;
-
 const RGB SelectedColor = RGB(245,212,66);
 const RGB UnselectedColor = RGB(112,109,96);
 const std::string SaveDirectory = "saves";
+const std::string DefaultSaveTitle = "Unnamed-Save-";
+const std::string SaveExtension = ".2048";
+
+std::vector<Gamesave> saves;
+u8 idx = 0;
+
+void populateSaves() {
+    saves.clear();
+    for(const auto& i : fs::directory_iterator(SaveDirectory)) {
+        if(!i.is_regular_file()) continue;
+        saves.push_back(Gamesave(i.path().string()));
+    }
+}
 
 void draw(const u32& idx) {
     std::wcout << ANSI_CLEAR;
@@ -25,6 +39,33 @@ void draw(const u32& idx) {
     std::wcout << getCol(idx==1?SelectedColor:UnselectedColor) << L"2) Load\n";
     std::wcout << getCol(idx==2?SelectedColor:UnselectedColor) << L"3) Quit\n";
     std::wcout << ANSI_RESET;
+}
+
+std::string getFirstValidName() {
+    fs::path p (SaveDirectory);
+    u32 i = 1;
+    for(; fs::is_regular_file(p/fs::path(DefaultSaveTitle+std::to_string(i)+SaveExtension)); i++);
+    return p / fs::path(DefaultSaveTitle + std::to_string(i) + SaveExtension);
+}
+
+void launchLoadMenu() {
+    u32 si = 0;
+
+}
+
+bool exec(const u8& idx) {
+    switch(idx) {
+        case 3: return 0;
+
+        case 1:
+        Game(Gamesave(getFirstValidName(),4), 1);
+        break;
+
+        case 2:
+        populateSaves();
+        launchLoadMenu();
+        break;
+    } return 1;
 }
 
 i32 main(i32 argc, char *argv[]) {
@@ -47,27 +88,26 @@ i32 main(i32 argc, char *argv[]) {
     newt.c_lflag &= ~(ICANON | ECHO);
     tcsetattr(STDIN_FILENO, TCSANOW, &newt);
 	#endif
-    
-    u8 idx = 0;
-    bool f = 1;
 
+    bool f = 1;
+    
     while(f) {
         draw(idx);
+        const char c = getch();
 
-        switch(getch()) {
+        if(std::isdigit(c)) {
+            f = exec(c - '0');
+            continue;
+        }
+
+        switch(c) {
             case 'w':
             case 'a': idx += idx ? -1 : 2; break;
 
             case 's':
             case 'd': idx += idx < 2 ? 1 : -2; break;
 
-            case ' ':
-            switch(idx) {
-                case 0: 
-                // TODO
-                break;
-                case 2: f = false; break;
-            } break;
+            case ' ': f = exec(idx+1); break;
 
             case 'q': f = false; break;
         }

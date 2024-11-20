@@ -3,9 +3,10 @@
 
 bool useCol = 1;
 
-Gamesave::Gamesave(const std::string& title, const u32& sz) 
-: Title(title),
-  BoardSize(sz) {
+Gamesave::Gamesave(const std::string& s, const u32& sz) 
+: BoardSize(sz) {
+    Path = s;
+    determineTitle();
     board = u_board(sz, std::vector<u32>(sz,0));
     BiggestCellCifCount = 1;
     BiggestCell = 2;
@@ -14,8 +15,11 @@ Gamesave::Gamesave(const std::string& title, const u32& sz)
 }
 
 Gamesave::Gamesave(const std::string& s) {
+    Path = s;
+    determineTitle();
+
     std::ifstream is (s);
-    is >> Title >> BoardSize;
+    is >> BoardSize;
 
     board = u_board(BoardSize, std::vector<u32>(BoardSize,0));
 
@@ -33,9 +37,9 @@ Gamesave::Gamesave(const std::string& s) {
     is.close();
 }
 
-void Gamesave::SaveData(const std::string& s) {
-    std::ofstream os (s);
-    os << Title << '\n' << BoardSize << '\n';
+void Gamesave::SaveData() {
+    std::ofstream os (Path);
+    os << BoardSize << '\n';
     for(u32 y=0; y < BoardSize; y++) {
         for(u32 x=0; x < BoardSize ; x++) {
             os << board[y][x];
@@ -51,6 +55,10 @@ void Gamesave::SaveData(const std::string& s) {
        << '\n' << moved;
 
     os.close();
+}
+
+void Gamesave::determineTitle() {
+    Title = fs::path(Path).stem().string();
 }
 
 RGB::RGB(const u8& r, const u8& g, const u8& b) : r(r), g(g), b(b) {}

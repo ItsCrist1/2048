@@ -5,6 +5,9 @@
 #include <string>
 #include <vector>
 #include <sstream>
+#include <filesystem>
+
+namespace fs = std::filesystem;
 
 using u8 = uint8_t;
 using u32 = uint32_t;
@@ -25,15 +28,17 @@ struct RGB {
 };
 
 struct Gamesave {
-    std::string Title;
+    std::string Title, Path;
     u32 BoardSize, BiggestCellCifCount, BiggestCell, Score;
     u_board board;
     std::pair<u32,u32> newPos;
     bool moved;
     
-    Gamesave(const std::string&, const u32& sz);
+    Gamesave(const std::string&, const u32&);
     Gamesave(const std::string&);
-    void SaveData(const std::string&);
+    void SaveData();
+private:
+    void determineTitle();
 };
 
 std::wstring getCol(const RGB& rgb);

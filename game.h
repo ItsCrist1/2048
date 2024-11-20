@@ -13,7 +13,7 @@ u32 getBiggest(const u_board&);
 
 class Game {
 public:
-    Game(const Gamesave&);
+    Game(const Gamesave&, const bool&);
 
 private:
     const std::unordered_map<u32,RGB> COLS {

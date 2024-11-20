@@ -23,12 +23,13 @@ u32 getBiggest(const u_board& b) {
     return m;
 }
 
-Game::Game(const Gamesave& save) 
+Game::Game(const Gamesave& save, const bool& f) 
     : s(save),
     BICSZ(pow(2,COLS.size())) {
-    AddCell();
-    AddCell();
-
+    if(f) {
+        AddCell();
+        AddCell();
+    }
     u8 state = 0;
 
     while(!state) {
@@ -46,7 +47,7 @@ Game::Game(const Gamesave& save)
     
         std::this_thread::sleep_for(std::chrono::seconds(5));
         getch();
-    } s.SaveData("saves/test.txt");
+    } else s.SaveData();
 }
 
 void Game::DrawBoard() {
