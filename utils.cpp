@@ -1,6 +1,11 @@
 #include "utils.h"
 #include <fstream>
 
+#ifndef _WIN32
+#include <termio.h> 
+#include <unistd.h>
+#endif 
+
 bool useCol = 1;
 
 Gamesave::Gamesave(const std::string& s, const u32& sz) 
@@ -88,6 +93,12 @@ char getch() {
         }
     } return c == 13 ? ' ' : c;
     #else
+    struct termios oldt, newt;
+	tcgetattr(STDIN_FILENO, &oldt);
+    newt = oldt;
+    newt.c_lflag &= ~(ICANON | ECHO);
+    tcsetattr(STDIN_FILENO, TCSANOW, &newt);
+
     char c = getchar();
     if(c == '\033') {
         getchar();
@@ -97,6 +108,10 @@ char getch() {
             case 'C': return 'd';
             case 'D': return 'a';
         }
-    } return c == '\n' ? ' ' : c;
+    }
+
+    tcsetattr(STDIN_FILENO, TCSANOW, &oldt);
+
+    return c == '\n' ? ' ' : c;
     #endif
 }

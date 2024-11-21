@@ -2,7 +2,9 @@
 #include "utils.h"
 
 #include <cctype>
+#include <cstdio>
 #include <cstdlib>
+#include <exception>
 #include <filesystem>
 #include <iostream>
 #include <string>
@@ -12,8 +14,6 @@
 #include <windows.h>
 #else
 #include <locale>
-#include <termios.h>
-#include <unistd.h>
 #endif
 
 const RGB SelectedColor = RGB(245,212,66);
@@ -95,6 +95,19 @@ void launchLoadMenu() {
             break;
 
             case 'q': return;
+
+            case 'e':
+            const Gamesave& gs = saves[si];
+            std::wcout << ANSI_CLEAR << L"Are you sure you want to delete ";
+            std::cout << gs.Title << "?\n";
+            std::wcout << L"It has " << fs::file_size(gs.Path) << L" bytes.\n";
+            std::wcout << L"[y/N] ";
+            if(const char c=getch(); c == 'y' || c == 'Y') {
+                fs::remove(gs.Path);
+                saves.erase(saves.begin() + si);
+                savesSize--;
+            }
+            break;
         }
     }
 }
@@ -128,11 +141,6 @@ i32 main(i32 argc, char *argv[]) {
 	SetConsoleOutputCP(CP_UTF8);
 	#else
 	std::locale::global(std::locale(""));
-	struct termios oldt, newt;
-	tcgetattr(STDIN_FILENO, &oldt);
-    newt = oldt;
-    newt.c_lflag &= ~(ICANON | ECHO);
-    tcsetattr(STDIN_FILENO, TCSANOW, &newt);
 	#endif
 
     bool f = 1;
@@ -158,10 +166,6 @@ i32 main(i32 argc, char *argv[]) {
             case 'q': f = false; break;
         }
     }
-
-	#ifndef _WIN32
-	tcsetattr(STDIN_FILENO, TCSANOW, &oldt);
-	#endif
 
     return EXIT_SUCCESS;
 }
