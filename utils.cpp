@@ -17,8 +17,13 @@ Gamesave::Gamesave(const std::string& s, const u32& sz)
 Gamesave::Gamesave(const std::string& s) {
     Path = s;
     determineTitle();
+    LoadData();
+}
 
-    std::ifstream is (s);
+void Gamesave::LoadData() {
+    determineTitle();
+
+    std::ifstream is (Path);
     is >> BoardSize;
 
     board = u_board(BoardSize, std::vector<u32>(BoardSize,0));

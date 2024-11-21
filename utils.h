@@ -37,6 +37,7 @@ struct Gamesave {
     Gamesave(const std::string&, const u32&);
     Gamesave(const std::string&);
     void SaveData();
+    void LoadData();
 private:
     void determineTitle();
 };

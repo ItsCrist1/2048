@@ -35,7 +35,11 @@ Game::Game(const Gamesave& save, const bool& f)
     while(!state) {
         DrawBoard();
         const char c = std::tolower(getch());
-        if(c == 'q') state = 1;
+        if(c == 'q') {
+            state = 1;
+            s.SaveData();
+        }
+
         if(Slide(c))
             if(s.moved && !AddCell() && !canMove()) state = 2;
     }
@@ -47,7 +51,7 @@ Game::Game(const Gamesave& save, const bool& f)
     
         std::this_thread::sleep_for(std::chrono::seconds(5));
         getch();
-    } else s.SaveData();
+    }
 }
 
 void Game::DrawBoard() {
@@ -127,11 +131,12 @@ bool Game::Slide(const char& c) {
         for(u32 y=0; y < s.BoardSize; y++) {
             for(u32 x=1; x < s.BoardSize; x++) {
                 if(!s.board[y][x]) continue;
-                    u32 i = x;
-                    while(i && !s.board[y][i-1]) i--;
+                
+                u32 i = x;
+                while(i && !s.board[y][i-1]) i--;
 
-                    u32* v[3] = { &s.board[y][x], &s.board[y][i-1], &s.board[y][i] };
-                    Combine_Move(v, {i, i != x}, combined[y][i]);
+                u32* v[3] = { &s.board[y][x], &s.board[y][i-1], &s.board[y][i] };
+                Combine_Move(v, {i, i != x}, combined[y][i]);
             }
         } break;
 
