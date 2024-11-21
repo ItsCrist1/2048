@@ -56,10 +56,10 @@ void drawLoad(const u32& si) {
     for(u32 i=0; i < savesSize; i++) {
         const Gamesave& g = saves[i];
         std::wcout << getCol(si==i?SelectedColor:UnselectedColor);
-        std::cout << i+1 << ") " << g.Title << '\n';
+        std::wcout << i+1 << L") " << std::wstring(g.Title.begin(), g.Title.end()) << '\n';
         std::wcout << ANSI_RESET;
-        std::cout << fs::file_size(g.Path) << " bytes\n";
-        std::cout << "Board Size: " << g.BoardSize << "\n\n";
+        std::wcout << fs::file_size(g.Path) << L" bytes\n";
+        std::wcout << L"Board Size: " << g.BoardSize << L"\n\n";
     }
 }
 
@@ -99,7 +99,7 @@ void launchLoadMenu() {
             case 'e':
             const Gamesave& gs = saves[si];
             std::wcout << ANSI_CLEAR << L"Are you sure you want to delete ";
-            std::cout << gs.Title << "?\n";
+            std::wcout << std::wstring(gs.Title.begin(), gs.Title.end()) << "?\n";
             std::wcout << L"It has " << fs::file_size(gs.Path) << L" bytes.\n";
             std::wcout << L"[y/N] ";
             if(const char c=getch(); c == 'y' || c == 'Y') {
