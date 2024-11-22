@@ -1,17 +1,39 @@
 #include "utils.h"
+#include <bits/termios_inlines.h>
+#include <csignal>
 #include <fstream>
 
 #ifndef _WIN32
 #include <termio.h> 
 #include <unistd.h>
+#include <cstdlib>
+
+static struct termios oldt;
+
+void cleanup(int) {
+    tcsetattr(STDIN_FILENO, TCSANOW, &oldt);
+    exit(0);
+}
+
+void initializeExitSignals() {
+    signal(SIGINT, cleanup);
+    signal(SIGTERM, cleanup);
+    signal(SIGSEGV, cleanup);
+    signal(SIGABRT, cleanup);
+}
+
 #endif 
 
 bool useCol = 1;
 
+std::wstring stw(const std::string& s) {
+    return std::wstring(s.begin(), s.end());
+}
+
 Gamesave::Gamesave(const std::string& s, const u32& sz) 
 : BoardSize(sz) {
     Path = s;
-    determineTitle();
+    DetermineTitle();
     board = u_board(sz, std::vector<u32>(sz,0));
     BiggestCellCifCount = 1;
     BiggestCell = 2;
@@ -21,12 +43,12 @@ Gamesave::Gamesave(const std::string& s, const u32& sz)
 
 Gamesave::Gamesave(const std::string& s) {
     Path = s;
-    determineTitle();
+    DetermineTitle();
     LoadData();
 }
 
 void Gamesave::LoadData() {
-    determineTitle();
+    DetermineTitle();
 
     std::ifstream is (Path);
     is >> BoardSize;
@@ -67,7 +89,7 @@ void Gamesave::SaveData() {
     os.close();
 }
 
-void Gamesave::determineTitle() {
+void Gamesave::DetermineTitle() {
     Title = fs::path(Path).stem().string();
 }
 
@@ -93,8 +115,8 @@ char getch() {
         }
     } return c == 13 ? ' ' : c;
     #else
-    struct termios oldt, newt;
-	tcgetattr(STDIN_FILENO, &oldt);
+    tcgetattr(STDIN_FILENO, &oldt);
+    struct termios newt;
     newt = oldt;
     newt.c_lflag &= ~(ICANON | ECHO);
     tcsetattr(STDIN_FILENO, TCSANOW, &newt);

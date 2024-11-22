@@ -121,9 +121,14 @@ bool Game::Slide(const char& c) {
                 if(!s.board[y][x]) continue;
                 u32 i = y;
                 while(i < s.BoardSize-1 && !s.board[i+1][x]) i++;
-
-                u32* v[3] = { &s.board[y][x], &s.board[i+1][x], &s.board[i][x]  };
-                Combine_Move(v, {i < s.BoardSize-1, i != y}, combined[i+1][x]);
+                
+                if(i < s.BoardSize-1) {
+                    u32* v[3] = { &s.board[y][x], &s.board[i+1][x], &s.board[i][x]  };
+                    Combine_Move(v, {1, i != y}, combined[i+1][x]);
+                } else {
+                    u32* v[3] = { &s.board[y][x], nullptr, &s.board[i][x] };
+                    Combine_Move(v, {0, i != y}, combined[i][x]);
+                }
             }
         } break;
 
@@ -148,7 +153,7 @@ bool Game::Slide(const char& c) {
                 while(i < s.BoardSize-1 && !s.board[y][i+1]) i++;
                 
                 u32* v[3] = { &s.board[y][x], &s.board[y][i+1], &s.board[y][i] };
-                Combine_Move(v, {i<s.BoardSize-1,i!=x}, combined[y][i+1]);
+                Combine_Move(v, {i<s.BoardSize-1,i != x}, combined[y][i+1]);
             }
         } break;
 

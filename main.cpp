@@ -56,19 +56,23 @@ void drawLoad(const u32& si) {
     for(u32 i=0; i < savesSize; i++) {
         const Gamesave& g = saves[i];
         std::wcout << getCol(si==i?SelectedColor:UnselectedColor);
-        std::wcout << i+1 << L") " << std::wstring(g.Title.begin(), g.Title.end()) << '\n';
-        std::wcout << ANSI_RESET;
-        std::wcout << fs::file_size(g.Path) << L" bytes\n";
-        std::wcout << L"Board Size: " << g.BoardSize << L"\n\n";
+        std::wcout << i+1 << L") " << stw(g.Title) << L" (" << fs::file_size(g.Path) << L" bytes)\n";
+        std::wcout << ANSI_RESET << L"Board Size: " << g.BoardSize << L" | Score: " << g.Score << L"\n\n";
     }
 }
 
 void launchLoadMenu() {
     u32 si = 0;
+    bool r = 0;
     
     while(1) {
+        if(r) {
+            populateSaves();
+            r = 0;
+        }
+
         drawLoad(si);
-        const char c = getch();
+        const char c = std::tolower(getch());
         
         if(const u32 cd=c-'0'; 
             std::isdigit(c) && cd > 0
@@ -77,6 +81,9 @@ void launchLoadMenu() {
             saves[cd-1].LoadData();
             continue;
         }
+
+        Gamesave& gs = saves[si];
+        std::string s, p;
 
         switch(c) {
             case 'w':
@@ -96,18 +103,33 @@ void launchLoadMenu() {
 
             case 'q': return;
 
+            case 'r': r = 1; break;
+            
+            case 'y':
+            std::wcout << ANSI_CLEAR << L"What do you want to rename " << stw(gs.Title) << "? ";
+            std::cin >> s;
+            std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+            p = fs::path(SaveDirectory) / fs::path(s + SaveExtension);
+            if(!fs::exists(p)) {
+                fs::rename(gs.Path, p);
+                gs.Path = p;
+                gs.Title = s;
+            } else {
+                std::wcerr << stw(s) << L" already exists ";
+                getch();
+            }
+            break;
+
             case 'e':
-            const Gamesave& gs = saves[si];
             std::wcout << ANSI_CLEAR << L"Are you sure you want to delete ";
-            std::wcout << std::wstring(gs.Title.begin(), gs.Title.end()) << "?\n";
+            std::wcout << stw(gs.Title) << "?\n";
             std::wcout << L"It has " << fs::file_size(gs.Path) << L" bytes.\n";
             std::wcout << L"[y/N] ";
             if(const char c=getch(); c == 'y' || c == 'Y') {
                 fs::remove(gs.Path);
                 saves.erase(saves.begin() + si);
                 savesSize--;
-            }
-            break;
+            } break;
         }
     }
 }
@@ -141,6 +163,7 @@ i32 main(i32 argc, char *argv[]) {
 	SetConsoleOutputCP(CP_UTF8);
 	#else
 	std::locale::global(std::locale(""));
+    initializeExitSignals();
 	#endif
 
     bool f = 1;
@@ -163,7 +186,7 @@ i32 main(i32 argc, char *argv[]) {
 
             case ' ': f = exec(idx+1); break;
 
-            case 'q': f = false; break;
+            case 'q': f = 0; break;
         }
     }
 

@@ -22,11 +22,11 @@ cd ..
 ```
 
 # Running
-You can run [this](https://github.com/ItsCrist1/2048/blob/main/bin/exec) executable
+You can run [this](https://github.com/ItsCrist1/2048/blob/main/bin/exec.out) executable
 ```
 git clone https://www.github.com/ItsCrist1/2048.git
 cd 2048/bin
-./exec
+./exec.out
 ```
 
 # Contact

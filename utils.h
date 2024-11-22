@@ -20,6 +20,12 @@ extern bool useCol;
 const std::wstring ANSI_CLEAR = L"\033[2J\033[H";
 const std::wstring ANSI_RESET = L"\033[0m";
 
+#ifndef _WIN32
+void initializeExitSignals();
+#endif
+
+std::wstring stw(const std::string&);
+
 struct RGB {
     const u8 r,g,b;
 
@@ -38,8 +44,7 @@ struct Gamesave {
     Gamesave(const std::string&);
     void SaveData();
     void LoadData();
-private:
-    void determineTitle();
+    void DetermineTitle();
 };
 
 std::wstring getCol(const RGB& rgb);
