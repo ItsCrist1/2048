@@ -160,7 +160,7 @@ i32 main(i32 argc, char *argv[]) {
 	SetConsoleOutputCP(CP_UTF8);
 	#else
 	std::locale::global(std::locale(""));
-    initializeExitSignals();
+    initTerminalStates();
 	#endif
 
     bool f = 1;

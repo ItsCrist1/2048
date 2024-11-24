@@ -1,26 +1,31 @@
 #include "utils.h"
-#include <csignal>
 #include <fstream>
 
 #ifdef _WIN32
 #include <conio.h>
 #else
-#include <termio.h> 
-#include <unistd.h>
-#include <cstdlib>
+#include <termio.h>
+#include <csignal>
 
-static struct termios oldt;
+struct termios oldt, newt;
 
-void cleanup(int) {
-    tcsetattr(STDIN_FILENO, TCSANOW, &oldt);
-    exit(0);
+void initTerminalStates() {
+    tcgetattr(STDIN_FILENO, &oldt);
+    newt = oldt;
+    newt.c_lflag &= ~(ICANON | ECHO);
+
+    std::signal(SIGINT, cleanup);
+    std::signal(SIGTERM, cleanup);
+    std::signal(SIGSEGV, cleanup);
 }
 
-void initializeExitSignals() {
-    signal(SIGINT, cleanup);
-    signal(SIGTERM, cleanup);
-    signal(SIGSEGV, cleanup);
-    signal(SIGABRT, cleanup);
+void setTerminalState(const struct termios& s) {
+    tcsetattr(STDIN_FILENO, TCSANOW, &s);
+}
+
+void cleanup(i32 sig) {
+    setTerminalState(oldt);
+    std::exit(sig);
 }
 
 #endif 
@@ -124,12 +129,7 @@ char getch() {
         }
     } return c == 13 ? ' ' : c;
     #else
-    tcgetattr(STDIN_FILENO, &oldt);
-    struct termios newt;
-    newt = oldt;
-    newt.c_lflag &= ~(ICANON | ECHO);
-    tcsetattr(STDIN_FILENO, TCSANOW, &newt);
-
+    setTerminalState(newt);
     char c = getchar();
     if(c == '\033') {
         getchar();
@@ -139,9 +139,7 @@ char getch() {
             case 'C': return 'd';
             case 'D': return 'a';
         }
-    }
-
-    tcsetattr(STDIN_FILENO, TCSANOW, &oldt);
+    } setTerminalState(oldt);
 
     return c == '\n' ? ' ' : c;
     #endif

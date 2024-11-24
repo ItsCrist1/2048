@@ -21,7 +21,8 @@ const std::wstring ANSI_CLEAR = L"\033[2J\033[H";
 const std::wstring ANSI_RESET = L"\033[0m";
 
 #ifndef _WIN32
-void initializeExitSignals();
+void initTerminalStates();
+void cleanup(i32);
 #endif
 
 std::wstring stw(const std::string&);
