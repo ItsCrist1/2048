@@ -52,7 +52,7 @@ Game::Game(const Gamesave& save, const bool& f)
         std::wcout << getCol(ScoreColor) << L"s.Score: " << s.Score;
         std::wcout << getCol(BiggestCellColor) << L"\nBiggest: " << s.BiggestCell << ANSI_RESET << std::endl;
     
-        std::this_thread::sleep_for(std::chrono::seconds(5));
+        std::this_thread::sleep_for(std::chrono::seconds(3));
         flushInputBuffer();
         std::wcout << L"\nPress any key to continue...";
         getch();
