@@ -48,6 +48,7 @@ struct Gamesave {
 };
 
 std::wstring getCol(const RGB& rgb);
+void flushInputBuffer();
 char getch();
 
 #endif

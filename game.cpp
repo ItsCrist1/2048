@@ -35,13 +35,16 @@ Game::Game(const Gamesave& save, const bool& f)
     while(!state) {
         DrawBoard();
         const char c = std::tolower(getch());
+
         if(c == 'q') {
             state = 1;
             s.SaveData();
         }
 
-        if(Slide(c))
-            if(s.moved && !AddCell() && !canMove()) state = 2;
+        if(Slide(c)) {
+            if(IsOver()) state = 2;
+            else if(s.moved) AddCell();
+        }
     }
     
     if(state == 2) {
@@ -50,6 +53,8 @@ Game::Game(const Gamesave& save, const bool& f)
         std::wcout << getCol(BiggestCellColor) << L"\nBiggest: " << s.BiggestCell << ANSI_RESET << std::endl;
     
         std::this_thread::sleep_for(std::chrono::seconds(5));
+        flushInputBuffer();
+        std::wcout << L"\nPress any key to continue...";
         getch();
     }
 }
@@ -178,29 +183,27 @@ void Game::Combine_Move(u32* v[3], const std::pair<bool,bool>& f, std::vector<bo
     }
 }
 
-bool Game::AddCell() {
+void Game::AddCell() {
     std::vector<std::pair<u32,u32>> v;
 
     for(u32 y=0; y < s.BoardSize; y++)
         for(u32 x=0; x< s.BoardSize; x++)
             if(!s.board[y][x]) v.push_back(std::pair<u32,u32>(x,y));
     
-    const u32 sz = v.size();
-    std::wcout << L"Size: " << sz << std::endl;
-    
-    if(!sz) return 0;
-
-    const std::pair<u32,u32> p = v[getRand(0,sz-1)];
+    const std::pair<u32,u32> p = v[getRand(0,v.size()-1)];
     s.board[p.second][p.first] = getRand(0,10) ? 2 : 4;
     s.newPos = p;
-    return 1;
 }
 
-bool Game::canMove() {
-    for(u32 y=0; y < s.BoardSize-1; y++) {
-        for(u32 x=0; x < s.BoardSize-1; x++)
-            if(s.board[y][x] == s.board[y][x+1] || s.board[y][x] == s.board[y+1][x]) return 1;
-    } return 0;
+bool Game::IsOver() {
+    const u32 bszd = s.BoardSize - 1;
+    for(u32 y=0; y < s.BoardSize; y++) {
+        for(u32 x=0; x < s.BoardSize; x++) {
+            if(!s.board[y][x]) return 0;
+            if((x < bszd && s.board[y][x] == s.board[y][x+1])
+                || (y < bszd && s.board[y][x] == s.board[y+1][x])) return 0;
+        }
+    } return 1;
 }
 
 u32 Game::getRand(const u32& mn, const u32& mx) {

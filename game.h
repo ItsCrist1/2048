@@ -43,8 +43,8 @@ private:
     void DrawBoard();
     bool Slide(const char&);
     void Combine_Move(u32*[3], const std::pair<bool,bool>&, std::vector<bool>::reference);
-    bool AddCell();
-    bool canMove();
+    void AddCell();
+    bool IsOver();
     u32 getRand(const u32& mn=0, const u32& mx=1);
 };
 

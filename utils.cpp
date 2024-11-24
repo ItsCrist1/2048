@@ -1,9 +1,10 @@
 #include "utils.h"
-#include <bits/termios_inlines.h>
 #include <csignal>
 #include <fstream>
 
-#ifndef _WIN32
+#ifdef _WIN32
+#include <conio.h>
+#else
 #include <termio.h> 
 #include <unistd.h>
 #include <cstdlib>
@@ -101,6 +102,14 @@ std::wstring getCol(const RGB& rgb) {
     std::wstringstream wss;
     wss << L"\033[38;2;" << rgb.r  << L';' << rgb.g << L';' << rgb.b << L'm';
     return wss.str();
+}
+
+void flushInputBuffer() {
+    #ifdef _WIN32
+    while(_kbhit()) _getch(); 
+    #else
+    tcflush(STDIN_FILENO, TCIFLUSH);
+    #endif
 }
 
 char getch() {

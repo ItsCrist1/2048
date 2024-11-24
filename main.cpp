@@ -2,9 +2,6 @@
 #include "utils.h"
 
 #include <cctype>
-#include <cstdio>
-#include <cstdlib>
-#include <exception>
 #include <filesystem>
 #include <iostream>
 #include <string>
