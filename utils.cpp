@@ -36,6 +36,16 @@ std::wstring stw(const std::string& s) {
     return std::wstring(s.begin(), s.end());
 }
 
+u32 readu32(std::ifstream& is) {
+    u32 n;
+    is.read(reinterpret_cast<char*>(&n), 4);
+    return n;
+}
+
+void writeu32(std::ofstream& os, u32 n) {
+    os.write(reinterpret_cast<char*>(&n), 4);
+}
+
 Gamesave::Gamesave(const std::string& s, const u32& sz) 
 : BoardSize(sz) {
     Path = s;
@@ -45,6 +55,7 @@ Gamesave::Gamesave(const std::string& s, const u32& sz)
     BiggestCell = 2;
     Score = 0;
     moved = 1;
+    MagicNumber = ValidationMagicNumber;
 }
 
 Gamesave::Gamesave(const std::string& s) {
@@ -56,42 +67,39 @@ Gamesave::Gamesave(const std::string& s) {
 void Gamesave::LoadData() {
     DetermineTitle();
 
-    std::ifstream is (Path);
-    is >> BoardSize;
+    std::ifstream is (Path, std::ios::binary);
+    MagicNumber = readu32(is);
 
-    board = u_board(BoardSize, std::vector<u32>(BoardSize,0));
-
+    BoardSize = readu32(is);
+    board = u_board(BoardSize, std::vector<u32>(BoardSize));
     for(u32 y=0; y < BoardSize; y++)
         for(u32 x=0; x < BoardSize; x++)
-            is >> board[y][x];
-    
-    is >> BiggestCellCifCount 
-       >> BiggestCell 
-       >> Score 
-       >> newPos.first 
-       >> newPos.second 
-       >> moved;
+            board[y][x] = readu32(is);
 
+    BiggestCellCifCount = readu32(is);
+    BiggestCell = readu32(is);
+    Score = readu32(is);
+    newPos = { readu32(is), readu32(is) };
+    moved = is.get() != 0;
     is.close();
 }
 
 void Gamesave::SaveData() {
-    std::ofstream os (Path);
-    os << BoardSize << '\n';
-    for(u32 y=0; y < BoardSize; y++) {
-        for(u32 x=0; x < BoardSize ; x++) {
-            os << board[y][x];
-            if(x != BoardSize-1) os << ' ';
-        } os << '\n';
-    } 
+    std::ofstream os (Path, std::ios::binary);
+    writeu32(os, MagicNumber);
 
-    os << BiggestCellCifCount 
-       << ' ' << BiggestCell 
-       << ' ' << Score 
-       << '\n' << newPos.first 
-       << ' ' << newPos.second 
-       << '\n' << moved;
+    writeu32(os, BoardSize);
+    for(const std::vector<u32>& v : board)
+        for(const u32& i : v)
+            writeu32(os, i);
 
+    writeu32(os, BiggestCellCifCount);
+    writeu32(os, BiggestCell);
+    writeu32(os, Score);
+
+    writeu32(os, newPos.first);
+    writeu32(os, newPos.second);
+    writeu32(os, moved);
     os.close();
 }
 

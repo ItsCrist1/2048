@@ -17,7 +17,7 @@ const RGB SelectedColor = RGB(245,212,66);
 const RGB UnselectedColor = RGB(112,109,96);
 const std::string SaveDirectory = "saves";
 const std::string DefaultSaveTitle = "Unnamed-Save-";
-const std::string SaveExtension = ".2048";
+const std::string SaveExtension = ".dat";
 
 std::vector<Gamesave> saves;
 u32 savesSize;
@@ -27,8 +27,10 @@ void populateSaves() {
     saves.clear();
     u32 j = 0;
     for(const auto& i : fs::directory_iterator(SaveDirectory)) {
-        if(!i.is_regular_file()) continue;
-        saves.push_back(Gamesave(i.path().string()));
+        const fs::path fp (i);
+        if(!fs::is_regular_file(fp) || fp.extension().string() != SaveExtension) continue;
+        Gamesave gs (i.path().string());
+        if(gs.MagicNumber == ValidationMagicNumber) saves.push_back(gs);
         j++;
     } savesSize = j;
 }

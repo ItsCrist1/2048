@@ -25,7 +25,12 @@ void initTerminalStates();
 void cleanup(i32);
 #endif
 
+const u32 ValidationMagicNumber = 0x2048;
+
 std::wstring stw(const std::string&);
+
+u32 readu32(std::ifstream&);
+void writeu32(std::ofstream&, u32);
 
 struct RGB {
     const u8 r,g,b;
@@ -35,6 +40,7 @@ struct RGB {
 };
 
 struct Gamesave {
+    u32 MagicNumber;
     std::string Title, Path;
     u32 BoardSize, BiggestCellCifCount, BiggestCell, Score;
     u_board board;
