@@ -15,14 +15,6 @@ u32 cifCount(const u32& n) {
     return n ? std::log10(n)+1 : 1;
 }
 
-u32 getBiggest(const u_board& b) {
-    u32 m = 0;
-    for(const auto& v : b)
-        for(const auto& i : v)
-            m = std::max(m,cifCount(i));
-    return m;
-}
-
 Game::Game(const Gamesave& save, const bool& f) 
     : s(save),
     BICSZ(pow(2,COLS.size())) {
@@ -34,7 +26,7 @@ Game::Game(const Gamesave& save, const bool& f)
 
     while(!state) {
         DrawBoard();
-        const char c = std::tolower(getch());
+        const char c = std::tolower(getChar());
 
         if(c == 'q') {
             state = 1;
@@ -55,7 +47,7 @@ Game::Game(const Gamesave& save, const bool& f)
         std::this_thread::sleep_for(std::chrono::seconds(3));
         flushInputBuffer();
         std::wcout << L"\nPress any key to continue...";
-        getch();
+        getChar();
     }
 }
 

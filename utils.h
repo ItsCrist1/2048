@@ -40,12 +40,11 @@ struct RGB {
 };
 
 struct Gamesave {
-    u32 MagicNumber;
     std::string Title, Path;
     u32 BoardSize, BiggestCellCifCount, BiggestCell, Score;
     u_board board;
     std::pair<u32,u32> newPos;
-    bool moved;
+    bool moved, isValid;
     
     Gamesave(const std::string&, const u32&);
     Gamesave(const std::string&);
@@ -56,6 +55,6 @@ struct Gamesave {
 
 std::wstring getCol(const RGB& rgb);
 void flushInputBuffer();
-char getch();
+char getChar();
 
 #endif

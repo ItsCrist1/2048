@@ -1,4 +1,5 @@
 #include "utils.h"
+#include <exception>
 #include <fstream>
 
 #ifdef _WIN32
@@ -30,6 +31,7 @@ void cleanup(i32 sig) {
 
 #endif 
 
+constexpr u8 u32sz = sizeof(u32);
 bool useCol = 1;
 
 std::wstring stw(const std::string& s) {
@@ -38,12 +40,12 @@ std::wstring stw(const std::string& s) {
 
 u32 readu32(std::ifstream& is) {
     u32 n;
-    is.read(reinterpret_cast<char*>(&n), 4);
+    is.read(reinterpret_cast<char*>(&n), u32sz);
     return n;
 }
 
 void writeu32(std::ofstream& os, u32 n) {
-    os.write(reinterpret_cast<char*>(&n), 4);
+    os.write(reinterpret_cast<char*>(&n), u32sz);
 }
 
 Gamesave::Gamesave(const std::string& s, const u32& sz) 
@@ -55,20 +57,27 @@ Gamesave::Gamesave(const std::string& s, const u32& sz)
     BiggestCell = 2;
     Score = 0;
     moved = 1;
-    MagicNumber = ValidationMagicNumber;
+}
+
+bool ValidateMagicNumber(const std::string& s) {
+    try {
+        std::ifstream is (s, std::ios::binary);
+        return readu32(is) == ValidationMagicNumber;
+    } catch(std::exception ex) { return 0; }
 }
 
 Gamesave::Gamesave(const std::string& s) {
     Path = s;
     DetermineTitle();
-    LoadData();
+    if(isValid = ValidateMagicNumber(s)) LoadData();
 }
+
 
 void Gamesave::LoadData() {
     DetermineTitle();
 
     std::ifstream is (Path, std::ios::binary);
-    MagicNumber = readu32(is);
+    readu32(is);
 
     BoardSize = readu32(is);
     board = u_board(BoardSize, std::vector<u32>(BoardSize));
@@ -86,7 +95,7 @@ void Gamesave::LoadData() {
 
 void Gamesave::SaveData() {
     std::ofstream os (Path, std::ios::binary);
-    writeu32(os, MagicNumber);
+    writeu32(os, ValidationMagicNumber);
 
     writeu32(os, BoardSize);
     for(const std::vector<u32>& v : board)
@@ -125,7 +134,7 @@ void flushInputBuffer() {
     #endif
 }
 
-char getch() {
+char getChar() {
     #ifdef _WIN32
     char c = _getch();
     if(c == 224) {
