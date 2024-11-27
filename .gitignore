@@ -2,3 +2,4 @@ bin/*
 !bin/exec.out
 saves/
 renew.sh
+settings.dat
