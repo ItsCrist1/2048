@@ -1,6 +1,7 @@
 #include "utils.h"
-#include <exception>
+#include <iostream>
 #include <fstream>
+#include <exception>
 
 #ifdef _WIN32
 #include <conio.h>
@@ -132,6 +133,11 @@ void flushInputBuffer() {
     #else
     tcflush(STDIN_FILENO, TCIFLUSH);
     #endif
+}
+
+void clearInputBuffer() {
+    std::cin.clear();
+    std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
 }
 
 char getChar() {

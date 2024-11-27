@@ -21,6 +21,8 @@ const std::string DefaultSaveTitle = "Unnamed-Save-";
 const std::string SaveExtension = ".dat";
 const std::string SettingsPath = "settings.dat";
 
+const u32 MaxBoardSz = 128;
+
 std::vector<Gamesave> saves;
 u32 savesSize;
 u8 idx = 0;
@@ -176,10 +178,9 @@ bool execSettings(const u8& idx) {
     switch(idx) {
         case 0:
         std::wcout << ANSI_CLEAR << L"Insert new value: ";
-        u32 sz; std::cin >> sz;
-        if(std::cin.fail()) {
-            std::cin.clear();
-            std::wcout << L"\nError, invalid input, must be a value from 1 to " << UINT32_MAX << L"\nPress any key to continue...";
+        if(u32 sz; !(std::cin >> sz) || sz < 2|| sz > MaxBoardSz) {
+            clearInputBuffer();
+            std::wcout << L"\nError, invalid input, must be a value from 1 to " << MaxBoardSz << L"\nPress any key to continue...";
             getChar();
         } else {
             boardSz = sz;
