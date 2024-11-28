@@ -7,6 +7,8 @@
 #include <string>
 #include <vector>
 #include <fstream>
+#include <ctime>
+#include <iomanip>
 
 #ifdef _WIN32
 #include <windows.h>
@@ -23,11 +25,25 @@ const std::string SettingsPath = "settings.dat";
 
 const u32 MaxBoardSz = 128;
 
+const std::wstring DIFF [4] = { L"Potato", L"Easy", L"Medium", L"Hard" };
+
 std::vector<Gamesave> saves;
 u32 savesSize;
 u8 idx = 0;
 
 u32 boardSz;
+u32 difficulty;
+
+std::wstring getLastEdit(const std::string& s) {
+    auto ftime = std::filesystem::last_write_time(s);
+    auto sctp = std::chrono::system_clock::from_time_t(
+        std::chrono::duration_cast<std::chrono::seconds>(ftime.time_since_epoch()).count());
+    std::time_t cftime = std::chrono::system_clock::to_time_t(sctp);
+
+    std::wstringstream wss;
+    wss << std::put_time(std::localtime(&cftime), L"%d.%m.%Y | %H:%M:%S");
+    return wss.str();
+}
 
 void populateSaves() {
     saves.clear();
@@ -60,9 +76,11 @@ void drawLoad(const u32& si) {
     std::wcout << ANSI_CLEAR;
     for(u32 i=0; i < savesSize; i++) {
         const Gamesave& g = saves[i];
-        std::wcout << getCol(si==i?SelectedColor:UnselectedColor);
-        std::wcout << i+1 << L") " << stw(g.Title) << L" (" << fs::file_size(g.Path) << L" bytes)\n";
-        std::wcout << ANSI_RESET << L"Board Size: " << g.BoardSize << L" | Score: " << g.Score << L"\n\n";
+        std::wcout << getCol(si==i?SelectedColor:UnselectedColor)
+                   << i+1 << L") " << stw(g.Title) << L" (" << fs::file_size(g.Path) << L" bytes)\n"
+                   << ANSI_RESET << L"Board Size: " << g.BoardSize << L" | Difficulty: " << DIFF[g.difficulty] << L'\n'
+                   << L"Score: " << g.Score << L" Biggest Cell: " << g.BiggestCell << L'\n'
+                   << L"Last edited: " << getLastEdit(g.Path) << L"\n\n"; 
     }
 }
 
@@ -141,12 +159,14 @@ void launchLoadMenu() {
 
 void setDefSettings() {
     boardSz = 4;
+    difficulty = 2;
 }
 
 void loadSettings() {
     std::ifstream is (SettingsPath, std::ios::binary);
     readu32(is);
-    boardSz = readu32(is); 
+    boardSz = readu32(is);
+    difficulty = readu32(is);
     is.close();
 }
 
@@ -154,6 +174,7 @@ void saveSettings() {
     std::ofstream os (SettingsPath, std::ios::binary);
     writeu32(os, ValidationMagicNumber);
     writeu32(os, boardSz);
+    writeu32(os, difficulty);
     os.close();
 }
 
@@ -170,11 +191,14 @@ void LoadSettings() {
 void drawSettings(const u8& idx) {
     std::wcout << ANSI_CLEAR
                << getCol(!idx?SelectedColor:UnselectedColor) << L"1) Change size: " << boardSz << L'\n'
-               << getCol(idx==1?SelectedColor:UnselectedColor) <<  L"2) Back\n"
+               << getCol(idx==1?SelectedColor:UnselectedColor) << L"2) Change difficulty: " << DIFF[difficulty] << L'\n'
+               << getCol(idx==2?SelectedColor:UnselectedColor) <<  L"3) Back\n"
                << ANSI_RESET;
 }
 
 bool execSettings(const u8& idx) {
+    bool f;
+    u8 tidx;
     switch(idx) {
         case 0:
         std::wcout << ANSI_CLEAR << L"Insert new value: ";
@@ -188,7 +212,48 @@ bool execSettings(const u8& idx) {
         }
         break;
 
-        case 1: return 0;
+        case 1:
+        f = 1;
+        tidx = 0;
+        while(f) {
+            std::wcout << ANSI_CLEAR
+                       << getCol(!tidx?RGB(73,245,85):UnselectedColor) << L"1) [Potato]\n"
+                       << getCol(tidx==1?RGB(47,176,56):UnselectedColor) << L"2) [Easy]\n"
+                       << getCol(tidx==2?RGB(190,232,3):UnselectedColor) << L"3) [Medium]\n"
+                       << getCol(tidx==3?RGB(227,40,11):UnselectedColor) << L"4) [Hard]\n"
+                       << getCol(tidx==4?SelectedColor:UnselectedColor) << L"5) Back\n\n" << ANSI_RESET;
+            const char c = getChar();
+            
+            if(const u32 n=c-'0'-1; std::isdigit(c)) {
+                if(n < 4) {
+                    difficulty = n;
+                    f = 0;
+                } else if(n == 4) f = 0;
+            }
+            
+
+            switch(c) {
+                case 'w':
+                case 'd':
+                tidx += tidx ? -1 : 4;
+                break;
+
+                case 's':
+                case 'a':
+                tidx += tidx < 4 ? 1 : -4;
+                break;
+
+                case ' ':
+                if(tidx != 4) difficulty = tidx;
+                f = 0;
+                break;
+
+                case 'q': f = 0; break;
+            }
+        }
+        break;
+
+        case 2: return 0;
     } return 1;
 }
 
@@ -205,11 +270,11 @@ void launchSettingsMenu() {
 
         switch(c) {
             case 'w':
-            case 'a': idx += idx ? -1 : 1; 
+            case 'a': idx += idx ? -1 : 2; 
             break;
 
             case 's':
-            case 'd': idx += idx < 1 ? 1 : -1;
+            case 'd': idx += idx < 2 ? 1 : -2;
             break;
             
             case ' ': if(!execSettings(idx)) return;
@@ -222,7 +287,7 @@ void launchSettingsMenu() {
 bool exec(const u8& idx) {
     switch(idx) {
         case 1:
-        Game(Gamesave(getFirstValidName(),boardSz), 1);
+        Game(Gamesave(getFirstValidName(),boardSz,difficulty), 1);
         break;
 
         case 2:

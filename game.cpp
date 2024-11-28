@@ -15,7 +15,7 @@ u32 cifCount(const u32& n) {
     return n ? std::log10(n)+1 : 1;
 }
 
-Game::Game(const Gamesave& save, const bool& f) 
+Game::Game(const Gamesave& save, bool f) 
     : s(save),
     BICSZ(pow(2,COLS.size())) {
     if(f) {
@@ -183,7 +183,7 @@ void Game::AddCell() {
             if(!s.board[y][x]) v.push_back(std::pair<u32,u32>(x,y));
     
     const std::pair<u32,u32> p = v[getRand(0,v.size()-1)];
-    s.board[p.second][p.first] = getRand(0,10) ? 2 : 4;
+    s.board[p.second][p.first] = getCell(s.difficulty);
     s.newPos = p;
 }
 
@@ -196,6 +196,27 @@ bool Game::IsOver() {
                 || (y < bszd && s.board[y][x] == s.board[y+1][x])) return 0;
         }
     } return 1;
+}
+
+u32 Game::getCell(const u32 dif) {
+    switch(dif) {
+        case 0:
+        return 4; 
+        break;
+
+        case 1:
+        return getRand(0,6) ? 2 : 4; 
+        break;
+
+        case 2:
+        return getRand(0,10) ? 2 : 4;
+        break;
+
+
+        case 3:
+        return 2;
+        break;
+    }
 }
 
 u32 Game::getRand(const u32& mn, const u32& mx) {

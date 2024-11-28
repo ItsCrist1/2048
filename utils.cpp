@@ -49,8 +49,9 @@ void writeu32(std::ofstream& os, u32 n) {
     os.write(reinterpret_cast<char*>(&n), u32sz);
 }
 
-Gamesave::Gamesave(const std::string& s, const u32& sz) 
-: BoardSize(sz) {
+Gamesave::Gamesave(const std::string& s, const u32& sz, const u32 dif) 
+: BoardSize(sz),
+  difficulty(dif) {
     Path = s;
     DetermineTitle();
     board = u_board(sz, std::vector<u32>(sz,0));
@@ -70,7 +71,7 @@ bool ValidateMagicNumber(const std::string& s) {
 Gamesave::Gamesave(const std::string& s) {
     Path = s;
     DetermineTitle();
-    if(isValid = ValidateMagicNumber(s)) LoadData();
+    if((isValid = ValidateMagicNumber(s))) LoadData();
 }
 
 
@@ -81,6 +82,8 @@ void Gamesave::LoadData() {
     readu32(is);
 
     BoardSize = readu32(is);
+    difficulty = readu32(is);
+
     board = u_board(BoardSize, std::vector<u32>(BoardSize));
     for(u32 y=0; y < BoardSize; y++)
         for(u32 x=0; x < BoardSize; x++)
@@ -99,6 +102,8 @@ void Gamesave::SaveData() {
     writeu32(os, ValidationMagicNumber);
 
     writeu32(os, BoardSize);
+    writeu32(os, difficulty);
+
     for(const std::vector<u32>& v : board)
         for(const u32& i : v)
             writeu32(os, i);

@@ -1,5 +1,4 @@
-#ifndef GAME_H
-#define GAME_H
+#pragma once
 
 #include "utils.h"
 
@@ -13,7 +12,7 @@ u32 getBiggest(const u_board&);
 
 class Game {
 public:
-    Game(const Gamesave&, const bool&);
+    Game(const Gamesave&, bool);
 
 private:
     const std::unordered_map<u32,RGB> COLS {
@@ -45,7 +44,6 @@ private:
     void Combine_Move(u32*[3], const std::pair<bool,bool>&, std::vector<bool>::reference);
     void AddCell();
     bool IsOver();
+    u32 getCell(const u32);
     u32 getRand(const u32& mn=0, const u32& mx=1);
 };
-
-#endif

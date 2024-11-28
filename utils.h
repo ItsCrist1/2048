@@ -1,5 +1,4 @@
-#ifndef UTILS_H
-#define UTILS_H
+#pragma once
 
 #include <cstdint>
 #include <string>
@@ -45,8 +44,9 @@ struct Gamesave {
     u_board board;
     std::pair<u32,u32> newPos;
     bool moved, isValid;
+    u32 difficulty;
     
-    Gamesave(const std::string&, const u32&);
+    Gamesave(const std::string&, const u32&, const u32);
     Gamesave(const std::string&);
     void SaveData();
     void LoadData();
@@ -57,5 +57,3 @@ std::wstring getCol(const RGB& rgb);
 void flushInputBuffer();
 void clearInputBuffer();
 char getChar();
-
-#endif
