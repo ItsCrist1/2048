@@ -196,9 +196,52 @@ void drawSettings(const u8& idx) {
                << ANSI_RESET;
 }
 
+void drawDifficulty(const u8& idx) {
+    std::wcout << ANSI_CLEAR
+               << getCol(!idx?RGB(73,245,85):UnselectedColor) << L"1) [Potato]\n"
+               << getCol(idx==1?RGB(47,176,56):UnselectedColor) << L"2) [Easy]\n"
+               << getCol(idx==2?RGB(190,232,3):UnselectedColor) << L"3) [Medium]\n"
+               << getCol(idx==3?RGB(227,40,11):UnselectedColor) << L"4) [Hard]\n"
+               << getCol(idx==4?SelectedColor:UnselectedColor) << L"5) Back\n\n" << ANSI_RESET;
+}
+
+void launchDifficulties() {
+    u8 idx = difficulty;
+    
+    while(1) {
+        drawDifficulty(idx);
+        const char c = getChar();
+            
+        if(const u32 n=c-'0'-1; std::isdigit(c)) {
+            if(n < 4) {
+                difficulty = n;
+                saveSettings();
+                return;
+            } else if(n == 4) return;
+        }
+            
+
+        switch(c) {
+            case 'w':
+            case 'd':
+            idx += idx ? -1 : 4;
+            break;
+
+            case 's':
+            case 'a':
+            idx += idx < 4 ? 1 : -4;
+            break;
+
+            case ' ':
+            if(idx != 4) { difficulty = idx; saveSettings(); }
+            return;
+
+            case 'q': return; break;
+        }
+    }
+}
+
 bool execSettings(const u8& idx) {
-    bool f;
-    u8 tidx;
     switch(idx) {
         case 0:
         std::wcout << ANSI_CLEAR << L"Insert new value: ";
@@ -212,49 +255,13 @@ bool execSettings(const u8& idx) {
         }
         break;
 
-        case 1:
-        f = 1;
-        tidx = 0;
-        while(f) {
-            std::wcout << ANSI_CLEAR
-                       << getCol(!tidx?RGB(73,245,85):UnselectedColor) << L"1) [Potato]\n"
-                       << getCol(tidx==1?RGB(47,176,56):UnselectedColor) << L"2) [Easy]\n"
-                       << getCol(tidx==2?RGB(190,232,3):UnselectedColor) << L"3) [Medium]\n"
-                       << getCol(tidx==3?RGB(227,40,11):UnselectedColor) << L"4) [Hard]\n"
-                       << getCol(tidx==4?SelectedColor:UnselectedColor) << L"5) Back\n\n" << ANSI_RESET;
-            const char c = getChar();
-            
-            if(const u32 n=c-'0'-1; std::isdigit(c)) {
-                if(n < 4) {
-                    difficulty = n;
-                    f = 0;
-                } else if(n == 4) f = 0;
-            }
-            
-
-            switch(c) {
-                case 'w':
-                case 'd':
-                tidx += tidx ? -1 : 4;
-                break;
-
-                case 's':
-                case 'a':
-                tidx += tidx < 4 ? 1 : -4;
-                break;
-
-                case ' ':
-                if(tidx != 4) difficulty = tidx;
-                f = 0;
-                break;
-
-                case 'q': f = 0; break;
-            }
-        }
-        break;
+        case 1: launchDifficulties(); break;
 
         case 2: return 0;
-    } return 1;
+    } 
+    //std::wcout << L"BRO WHAT\n";
+    //getChar();
+    return 1;
 }
 
 void launchSettingsMenu() {
@@ -282,6 +289,9 @@ void launchSettingsMenu() {
             case 'q': return;
         }
     }
+
+    std::wcout << L"LEAVING\n";
+    getChar();
 }
 
 bool exec(const u8& idx) {
@@ -303,14 +313,7 @@ bool exec(const u8& idx) {
     } return 1;
 }
 
-i32 main(i32 argc, char *argv[]) {
-    if(argc > 1) {
-        for(u32 i=1; i < argc; i++) {
-            const std::string arg = std::string(argv[i]);
-            if(arg == "--nocolor") useCol = 0;
-        }
-    }
-
+i32 main(i32 argc, char **argv) {
     if(!fs::is_directory(SaveDirectory)) fs::create_directory(SaveDirectory);
     LoadSettings();
 
@@ -321,14 +324,12 @@ i32 main(i32 argc, char *argv[]) {
     initTerminalStates();
 	#endif
 
-    bool f = 1;
-    
-    while(f) {
+    while(1) {
         draw(idx);
         const char c = getChar();
 
         if(std::isdigit(c)) {
-            f = exec(c - '0');
+            if(!exec(c - '0')) return 0;
             continue;
         }
 
@@ -339,11 +340,9 @@ i32 main(i32 argc, char *argv[]) {
             case 's':
             case 'd': idx += idx < 3 ? 1 : -3; break;
 
-            case ' ': f = exec(idx+1); break;
+            case ' ': if(!exec(idx+1)) return 0;
 
-            case 'q': f = 0; break;
+            case 'q': return 0;
         }
     }
-
-    return EXIT_SUCCESS;
 }

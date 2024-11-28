@@ -1,5 +1,3 @@
-bin/*
-!bin/exec.out
+bin/
 saves/
-renew.sh
 settings.dat
