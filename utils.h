@@ -16,9 +16,6 @@ using b_board = std::vector<std::vector<bool>>;
 
 extern bool useCol;
 
-const std::wstring ANSI_CLEAR = L"\033[2J\033[H";
-const std::wstring ANSI_RESET = L"\033[0m";
-
 #ifndef _WIN32
 void initTerminalStates();
 void cleanup(i32);
@@ -29,6 +26,7 @@ const u32 ValidationMagicNumber = 0x2048;
 std::wstring stw(const std::string&);
 std::wstring ga(const u32&, const u32);
 
+void clearScreen();
 u32 readu32(std::ifstream&);
 void writeu32(std::ofstream&, u32);
 
@@ -55,6 +53,7 @@ struct Gamesave {
 };
 
 std::wstring getCol(const RGB& rgb);
+std::wstring getCol();
 void flushInputBuffer();
 void clearInputBuffer();
 char getChar();

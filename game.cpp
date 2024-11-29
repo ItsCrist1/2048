@@ -41,8 +41,8 @@ Game::Game(const Gamesave& save, bool f)
     
     if(state == 2) {
         std::wcout << getCol(GameOverColor) << L"\n\nGame Over!\n";
-        std::wcout << getCol(ScoreColor) << L"s.Score: " << s.Score;
-        std::wcout << getCol(BiggestCellColor) << L"\nBiggest: " << s.BiggestCell << ANSI_RESET << std::endl;
+        std::wcout << getCol(ScoreColor) << L"Score: " << s.Score;
+        std::wcout << getCol(BiggestCellColor) << L"\nBiggest: " << s.BiggestCell << getCol() << std::endl;
     
         std::this_thread::sleep_for(std::chrono::seconds(3));
         flushInputBuffer();
@@ -53,7 +53,8 @@ Game::Game(const Gamesave& save, bool f)
 
 void Game::DrawBoard() {
     const u32 CELL_SZ = s.BiggestCellCifCount + 2;
-    std::wcout << ANSI_CLEAR << std::wstring(CELL_SZ/2, L' ') << getCol(TitleColor) << L"2048\n" << ANSI_RESET << TBL_CRS[2];
+    clearScreen();
+    std::wcout << std::wstring(CELL_SZ/2, L' ') << getCol(TitleColor) << L"2048\n" << getCol() << TBL_CRS[2];
     for(u32 i=0; i < s.BoardSize; i++) {
         std::wcout << std::wstring(CELL_SZ, TBL_CRS[0]);
         if (i < s.BoardSize-1) std::wcout << TBL_CRS[7];
@@ -76,8 +77,8 @@ void Game::DrawBoard() {
             else if(s.board[y][x] <= BICSZ && s.board[y][x]) std::wcout << getCol(COLS.at(s.board[y][x]));
             if(!n) std::wcout << L' ';
             else std::wcout << n;
-            std::wcout << ANSI_RESET;
-            std::wcout << std::wstring(PAD_SZ/2, L' ') << TBL_CRS[1];
+            std::wcout << getCol()
+                       << std::wstring(PAD_SZ/2, L' ') << TBL_CRS[1];
         } std::wcout << std::endl;
     }
 
@@ -87,8 +88,8 @@ void Game::DrawBoard() {
         if (i < s.BoardSize-1) std::wcout << TBL_CRS[6];
     } std::wcout << TBL_CRS[5] << L"\n\n";
 
-    std::wcout << getCol(ScoreColor) << L"s.Score: " << s.Score;
-    std::wcout << getCol(BiggestCellColor) << L"\ns.BiggestCell: " << s.BiggestCell << ANSI_RESET << std::endl;
+    std::wcout << getCol(ScoreColor) << L"Score: " << s.Score;
+    std::wcout << getCol(BiggestCellColor) << L"\nBiggestCell: " << s.BiggestCell << getCol() << std::endl;
 }
 
 bool Game::Slide(const char& c) {
@@ -216,7 +217,7 @@ u32 Game::getCell(const u32 dif) {
         case 3:
         return 2;
         break;
-    }
+    } return 0;
 }
 
 u32 Game::getRand(const u32& mn, const u32& mx) {

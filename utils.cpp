@@ -43,6 +43,14 @@ std::wstring ga(const u32& a, const u32 b) {
     return a==b && !useCol ? L"*\n" : L"\n";
 }
 
+void clearScreen() {
+    #ifdef _WIN32
+    std::system("cls");
+    #else
+    std::wcout << L"\033[2J\033[H";
+    #endif
+}
+
 u32 readu32(std::ifstream& is) {
     u32 n;
     is.read(reinterpret_cast<char*>(&n), u32sz);
@@ -134,6 +142,14 @@ std::wstring getCol(const RGB& rgb) {
     std::wstringstream wss;
     wss << L"\033[38;2;" << rgb.r  << L';' << rgb.g << L';' << rgb.b << L'm';
     return wss.str();
+}
+
+std::wstring getCol() {
+    #ifdef _WIN32
+    return L"";
+    #else 
+    return L"\033[0m";
+    #endif
 }
 
 void flushInputBuffer() {
