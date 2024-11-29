@@ -39,6 +39,10 @@ std::wstring stw(const std::string& s) {
     return std::wstring(s.begin(), s.end());
 }
 
+std::wstring ga(const u32& a, const u32 b) { 
+    return a==b && !useCol ? L"*\n" : L"\n";
+}
+
 u32 readu32(std::ifstream& is) {
     u32 n;
     is.read(reinterpret_cast<char*>(&n), u32sz);

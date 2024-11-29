@@ -58,10 +58,10 @@ void populateSaves() {
 
 void draw(const u32& idx) {
     std::wcout << ANSI_CLEAR
-               << getCol(!idx?SelectedColor:UnselectedColor) << L"1) New\n"
-               << getCol(idx==1?SelectedColor:UnselectedColor) << L"2) Load\n"
-               << getCol(idx==2?SelectedColor:UnselectedColor) << L"3) Settings\n"
-               << getCol(idx==3?SelectedColor:UnselectedColor) << L"4) Quit\n"
+               << getCol(!idx?SelectedColor:UnselectedColor) << L"1) New " << ga(idx,0)
+               << getCol(idx==1?SelectedColor:UnselectedColor) << L"2) Load " << ga(idx,1)
+               << getCol(idx==2?SelectedColor:UnselectedColor) << L"3) Settings " << ga(idx,2)
+               << getCol(idx==3?SelectedColor:UnselectedColor) << L"4) Quit " << ga(idx,3)
                << ANSI_RESET;
 }
 
@@ -72,12 +72,12 @@ std::string getFirstValidName() {
     return p / fs::path(DefaultSaveTitle + std::to_string(i) + SaveExtension);
 }
 
-void drawLoad(const u32& si) {
+void drawLoad(const u32& idx) {
     std::wcout << ANSI_CLEAR;
     for(u32 i=0; i < savesSize; i++) {
         const Gamesave& g = saves[i];
-        std::wcout << getCol(si==i?SelectedColor:UnselectedColor)
-                   << i+1 << L") " << stw(g.Title) << L" (" << fs::file_size(g.Path) << L" bytes)\n"
+        std::wcout << getCol(idx==i?SelectedColor:UnselectedColor)
+                   << i+1 << L") " << stw(g.Title) << L" (" << fs::file_size(g.Path) << L" bytes) " << ga(idx,i)
                    << ANSI_RESET << L"Board Size: " << g.BoardSize << L" | Difficulty: " << DIFF[g.difficulty] << L'\n'
                    << L"Score: " << g.Score << L" Biggest Cell: " << g.BiggestCell << L'\n'
                    << L"Last edited: " << getLastEdit(g.Path) << L"\n\n"; 
@@ -160,6 +160,12 @@ void launchLoadMenu() {
 void setDefSettings() {
     boardSz = 4;
     difficulty = 2;
+    
+    #ifdef _WIN32
+    useCol = 0;
+    #else
+    useCol = 0;
+    #endif
 }
 
 void loadSettings() {
@@ -167,6 +173,7 @@ void loadSettings() {
     readu32(is);
     boardSz = readu32(is);
     difficulty = readu32(is);
+    useCol = is.get() != 0;
     is.close();
 }
 
@@ -175,6 +182,7 @@ void saveSettings() {
     writeu32(os, ValidationMagicNumber);
     writeu32(os, boardSz);
     writeu32(os, difficulty);
+    writeu32(os, useCol);
     os.close();
 }
 
@@ -190,19 +198,20 @@ void LoadSettings() {
 
 void drawSettings(const u8& idx) {
     std::wcout << ANSI_CLEAR
-               << getCol(!idx?SelectedColor:UnselectedColor) << L"1) Change size: " << boardSz << L'\n'
-               << getCol(idx==1?SelectedColor:UnselectedColor) << L"2) Change difficulty: " << DIFF[difficulty] << L'\n'
-               << getCol(idx==2?SelectedColor:UnselectedColor) <<  L"3) Back\n"
+               << getCol(!idx?SelectedColor:UnselectedColor) << L"1) Change size: " << boardSz << L' ' << ga(idx,0)
+               << getCol(idx==1?SelectedColor:UnselectedColor) << L"2) Change difficulty: " << DIFF[difficulty] << L' ' << ga(idx,1)
+               << getCol(idx==2?SelectedColor:UnselectedColor) << L"3) Color Support: " << (useCol?L"On ":L"Off ") << ga(idx,2)
+               << getCol(idx==3?SelectedColor:UnselectedColor) <<  L"4) Back " << ga(idx,3)
                << ANSI_RESET;
 }
 
 void drawDifficulty(const u8& idx) {
     std::wcout << ANSI_CLEAR
-               << getCol(!idx?RGB(73,245,85):UnselectedColor) << L"1) [Potato]\n"
-               << getCol(idx==1?RGB(47,176,56):UnselectedColor) << L"2) [Easy]\n"
-               << getCol(idx==2?RGB(190,232,3):UnselectedColor) << L"3) [Medium]\n"
-               << getCol(idx==3?RGB(227,40,11):UnselectedColor) << L"4) [Hard]\n"
-               << getCol(idx==4?SelectedColor:UnselectedColor) << L"5) Back\n\n" << ANSI_RESET;
+               << getCol(!idx?RGB(73,245,85):UnselectedColor) << L"1) [Potato] " << ga(idx,0)
+               << getCol(idx==1?RGB(47,176,56):UnselectedColor) << L"2) [Easy]" << ga(idx,1)
+               << getCol(idx==2?RGB(190,232,3):UnselectedColor) << L"3) [Medium]" << ga(idx,2)
+               << getCol(idx==3?RGB(227,40,11):UnselectedColor) << L"4) [Hard] " << ga(idx,3)
+               << getCol(idx==4?SelectedColor:UnselectedColor) << L"5) Back " << ga(idx,4) << L'\n' << ANSI_RESET;
 }
 
 void launchDifficulties() {
@@ -260,7 +269,9 @@ bool execSettings(const u8& idx) {
 
         case 1: launchDifficulties(); break;
 
-        case 2: return 0;
+        case 2: useCol = !useCol; saveSettings(); break;
+
+        case 3: return 0;
     } 
     return 1;
 }
@@ -279,11 +290,11 @@ void launchSettingsMenu() {
 
         switch(c) {
             case 'w':
-            case 'a': idx += idx ? -1 : 2; 
+            case 'a': idx += idx ? -1 : 3; 
             break;
 
             case 's':
-            case 'd': idx += idx < 2 ? 1 : -2;
+            case 'd': idx += idx < 3 ? 1 : -3;
             break;
             
             case ' ': f = execSettings(idx); break;
