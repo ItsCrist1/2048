@@ -86,9 +86,9 @@ void drawLoad(const u32& si) {
 
 void launchLoadMenu() {
     u32 si = 0;
-    bool r = 0;
+    bool r = 0, f = 1;
     
-    while(1) {
+    while(f) {
         if(r) {
             populateSaves();
             r = 0;
@@ -124,7 +124,7 @@ void launchLoadMenu() {
             saves[si].LoadData();
             break;
 
-            case 'q': return;
+            case 'q': f = 0; break;
 
             case 'r': r = 1; break;
             
@@ -207,8 +207,9 @@ void drawDifficulty(const u8& idx) {
 
 void launchDifficulties() {
     u8 idx = difficulty;
-    
-    while(1) {
+    bool f = 1;
+
+    while(f) {
         drawDifficulty(idx);
         const char c = getChar();
             
@@ -216,8 +217,8 @@ void launchDifficulties() {
             if(n < 4) {
                 difficulty = n;
                 saveSettings();
-                return;
-            } else if(n == 4) return;
+                f = 0;
+            } else f = n != 4;
         }
             
 
@@ -234,9 +235,10 @@ void launchDifficulties() {
 
             case ' ':
             if(idx != 4) { difficulty = idx; saveSettings(); }
-            return;
+            f = 0;
+            break;
 
-            case 'q': return; break;
+            case 'q': f = 0; break;
         }
     }
 }
@@ -246,12 +248,13 @@ bool execSettings(const u8& idx) {
         case 0:
         std::wcout << ANSI_CLEAR << L"Insert new value: ";
         if(u32 sz; !(std::cin >> sz) || sz < 2|| sz > MaxBoardSz) {
-            clearInputBuffer();
             std::wcout << L"\nError, invalid input, must be a value from 1 to " << MaxBoardSz << L"\nPress any key to continue...";
+            clearInputBuffer();
             getChar();
         } else {
             boardSz = sz;
             saveSettings();
+            clearInputBuffer();
         }
         break;
 
@@ -259,19 +262,18 @@ bool execSettings(const u8& idx) {
 
         case 2: return 0;
     } 
-    //std::wcout << L"BRO WHAT\n";
-    //getChar();
     return 1;
 }
 
 void launchSettingsMenu() {
     u8 idx = 0;
-    while(1) {
+    bool f = 1;
+    while(f) {
         drawSettings(idx);
         const char c = getChar();
 
         if(std::isdigit(c)) {
-            if(!execSettings(c-'0'-1)) return;
+            f = execSettings(c-'0'-1);
             continue;
         }
 
@@ -284,14 +286,11 @@ void launchSettingsMenu() {
             case 'd': idx += idx < 2 ? 1 : -2;
             break;
             
-            case ' ': if(!execSettings(idx)) return;
+            case ' ': f = execSettings(idx); break;
 
             case 'q': return;
         }
     }
-
-    std::wcout << L"LEAVING\n";
-    getChar();
 }
 
 bool exec(const u8& idx) {
@@ -324,12 +323,14 @@ i32 main(i32 argc, char **argv) {
     initTerminalStates();
 	#endif
 
-    while(1) {
+    bool f = 1;
+
+    while(f) {
         draw(idx);
         const char c = getChar();
 
         if(std::isdigit(c)) {
-            if(!exec(c - '0')) return 0;
+            f = exec(c - '0');
             continue;
         }
 
@@ -340,9 +341,9 @@ i32 main(i32 argc, char **argv) {
             case 's':
             case 'd': idx += idx < 3 ? 1 : -3; break;
 
-            case ' ': if(!exec(idx+1)) return 0;
+            case ' ': f = exec(idx+1); break;
 
-            case 'q': return 0;
+            case 'q': f = 0; break;
         }
-    }
+    } return 0;
 }
