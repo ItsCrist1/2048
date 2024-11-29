@@ -8,8 +8,7 @@ A pretty fast cross-platform C++ terminal implementation of the classic game [20
 - Drawing tables with ASCII table symbols
 
 # Compatibility
-Compatibility with any UNIX system (any Linux distro, Android, MacOS etc) is almost 100% guaranteed.
-No compatibility for windows yet, no good color support.
+Works great with both Windows (not sure about windows 7 or older) and UNIX systems.
 
 # Building
 Requirements: git (or gh) and cmake
@@ -22,11 +21,18 @@ cd ..
 ```
 
 # Running
-You can run [this](https://github.com/ItsCrist1/2048/blob/main/bin/exec.out) executable
+You can run [this](https://github.com/ItsCrist1/2048/blob/main/bin/2048.out) executable for UNIX and [this](https://github.com/ItsCrist1/2048/blob/main/bin/2048.exe) executable for Windows
+## UNIX
 ```
 git clone https://www.github.com/ItsCrist1/2048.git
 cd 2048/bin
-./exec.out
+./2048.out
+```
+## Windows
+```
+git clone https://www.github.com/ItsCrist1/2048.git
+cd 2048/bin
+2048.exe
 ```
 
 # Contact

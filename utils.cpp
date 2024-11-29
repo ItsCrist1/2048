@@ -145,11 +145,7 @@ std::wstring getCol(const RGB& rgb) {
 }
 
 std::wstring getCol() {
-    #ifdef _WIN32
-    return L"";
-    #else 
     return L"\033[0m";
-    #endif
 }
 
 void flushInputBuffer() {
@@ -174,6 +170,8 @@ char getChar() {
             case 80: return 's';
             case 75: return 'a';
             case 77: return 'd';
+            
+            default: return 0;
         }
     } return c == 13 ? ' ' : (char)c;
     #else
