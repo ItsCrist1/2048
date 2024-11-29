@@ -167,15 +167,15 @@ void clearInputBuffer() {
 
 char getChar() {
     #ifdef _WIN32
-    char c = _getch();
-    if(c == 224) {
+    int c = _getch();
+    if (c == 224 || c == 0) {
         switch(_getch()) {
             case 72: return 'w';
             case 80: return 's';
             case 75: return 'a';
             case 77: return 'd';
         }
-    } return c == 13 ? ' ' : c;
+    } return c == 13 ? ' ' : (char)c;
     #else
     setTerminalState(newt);
     char c = getchar();

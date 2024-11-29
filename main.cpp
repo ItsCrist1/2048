@@ -1,4 +1,4 @@
-#include "game.h"
+﻿#include "game.h"
 #include "utils.h"
 
 #include <cctype>
@@ -7,11 +7,11 @@
 #include <string>
 #include <vector>
 #include <fstream>
-#include <ctime>
-#include <iomanip>
 
 #ifdef _WIN32
 #include <windows.h>
+#include <corecrt_io.h>
+#include <fcntl.h>
 #else
 #include <locale>
 #endif
@@ -35,15 +35,24 @@ u32 boardSz;
 u32 difficulty;
 
 std::wstring getLastEdit(const std::string& s) {
-    auto ftime = std::filesystem::last_write_time(s);
+    auto ftime = fs::last_write_time(s);
     auto sctp = std::chrono::system_clock::from_time_t(
         std::chrono::duration_cast<std::chrono::seconds>(ftime.time_since_epoch()).count());
     std::time_t cftime = std::chrono::system_clock::to_time_t(sctp);
 
+    std::tm timeStruct;
+#ifdef _WIN32
+    localtime_s(&timeStruct, &cftime);
+#else
+    std::tm* tmPtr = std::localtime(&cftime);
+    timeStruct = *tmPtr;
+#endif
+
     std::wstringstream wss;
-    wss << std::put_time(std::localtime(&cftime), L"%d.%m.%Y | %H:%M:%S");
+    wss << std::put_time(&timeStruct, L"%d.%m.%Y | %H:%M:%S");
     return wss.str();
 }
+
 
 void populateSaves() {
     saves.clear();
@@ -69,7 +78,7 @@ std::string getFirstValidName() {
     fs::path p (SaveDirectory);
     u32 i = 1;
     for(; fs::is_regular_file(p/fs::path(DefaultSaveTitle+std::to_string(i)+SaveExtension)); i++);
-    return p / fs::path(DefaultSaveTitle + std::to_string(i) + SaveExtension);
+    return (p / fs::path(DefaultSaveTitle + std::to_string(i) + SaveExtension)).string();
 }
 
 void drawLoad(const u32& idx) {
@@ -122,7 +131,7 @@ void launchLoadMenu() {
 
             case 's':
             case 'd':
-            si += si < savesSize-1 ? 1 : -savesSize+1; 
+            si += si < savesSize-1 ? 1 : savesSize-savesSize-savesSize+1; 
             break;
 
             case ' ': 
@@ -138,8 +147,8 @@ void launchLoadMenu() {
             clearScreen();
             std::wcout << L"What do you want to rename " << stw(gs.Title) << L" to? ";
             std::cin >> s;
-            std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
-            p = fs::path(SaveDirectory) / fs::path(s + SaveExtension);
+            clearInputBuffer();
+            p = (fs::path(SaveDirectory) / fs::path(s + SaveExtension)).string();
             if(!fs::exists(p)) {
                 fs::rename(gs.Path, p);
                 gs.Path = p;
@@ -343,7 +352,7 @@ i32 main(i32 argc, char **argv) {
     LoadSettings();
 
 	#ifdef _WIN32
-	SetConsoleOutputCP(CP_UTF8);
+    _setmode(_fileno(stdout), _O_U16TEXT);
 	#else
 	std::locale::global (std::locale(""));
     initTerminalStates();

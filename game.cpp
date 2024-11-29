@@ -138,8 +138,13 @@ bool Game::Slide(const char& c) {
                 u32 i = x;
                 while(i && !s.board[y][i-1]) i--;
 
-                u32* v[3] = { &s.board[y][x], &s.board[y][i-1], &s.board[y][i] };
-                Combine_Move(v, {i, i != x}, combined[y][i]);
+                if(i) {
+                    u32* v[3] = { &s.board[y][x], &s.board[y][i - 1], &s.board[y][i] };
+                    Combine_Move(v, { 1, i != x }, combined[y][i]);
+                } else {
+                    u32* v[3] = { &s.board[y][x], nullptr, &s.board[y][i] };
+                    Combine_Move(v, { 0, i != x }, combined[y][i]);
+                }
             }
         } break;
 
@@ -150,8 +155,13 @@ bool Game::Slide(const char& c) {
                 u32 i = x;
                 while(i < s.BoardSize-1 && !s.board[y][i+1]) i++;
                 
-                u32* v[3] = { &s.board[y][x], &s.board[y][i+1], &s.board[y][i] };
-                Combine_Move(v, {i<s.BoardSize-1,i != x}, combined[y][i+1]);
+                if(i < s.BoardSize-1) {
+                    u32* v[3] = { &s.board[y][x], &s.board[y][i+1], &s.board[y][i] };
+                    Combine_Move(v, { 1, i != x }, combined[y][i+1]);
+                } else {
+                    u32* v[3] = { &s.board[y][x], nullptr, &s.board[y][i] };
+                    Combine_Move(v, { 0, i != x }, combined[y][i]);
+                }
             }
         } break;
 
