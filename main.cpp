@@ -183,12 +183,7 @@ void launchLoadMenu() {
 void setDefSettings() {
     boardSz = 4;
     difficulty = 2;
-    
-    #ifdef _WIN32
-    useCol = 0;
-    #else
-    useCol = 0;
-    #endif
+    useCol = 1; 
 }
 
 void loadSettings() {
