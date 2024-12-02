@@ -29,7 +29,7 @@ const std::wstring DIFF [4] = { L"Potato", L"Easy", L"Medium", L"Hard" };
 
 std::vector<Gamesave> saves;
 u32 savesSize;
-u8 idx = 0;
+u8 idx, si;
 
 u32 boardSz;
 u32 difficulty;
@@ -94,20 +94,21 @@ void drawLoad(const u32& idx) {
 }
 
 void launchLoadMenu() {
+    populateSaves();
+
     if(saves.empty()) {
         std::wcout << L"No saves created yet\nPress any key to continue...";
         getChar();
         return;
     }
 
-    u32 si = 0;
-    bool r = 0, f = 1;
+    bool f = 1;
+    std::wstring title;
     
     while(f) {
-        if(r) {
-            populateSaves();
-            r = 0;
-        }
+        populateSaves();
+
+        if(si >= savesSize) si = savesSize - 1;
 
         drawLoad(si);
         const char c = std::tolower(getChar());
@@ -131,7 +132,7 @@ void launchLoadMenu() {
 
             case 's':
             case 'd':
-            si += si < savesSize-1 ? 1 : savesSize-savesSize-savesSize+1; 
+            si += si < savesSize-1 ? 1 : 1 - savesSize; 
             break;
 
             case ' ': 
@@ -140,12 +141,18 @@ void launchLoadMenu() {
             break;
 
             case 'q': f = 0; break;
-
-            case 'r': r = 1; break;
             
             case 'y':
             clearScreen();
-            std::wcout << L"What do you want to rename " << stw(gs.Title) << L" to? ";
+            title = stw(gs.Title);
+
+            if (!fs::is_regular_file(gs.Path)) {
+                std::wcerr << L"An error occured while trying to rename " << title << L"\nPress any key to continue...";
+                getChar();
+                break;
+            }
+
+            std::wcout << L"What do you want to rename " << title << L" to? ";
             std::cin >> s;
             clearInputBuffer();
             p = (fs::path(SaveDirectory) / fs::path(s + SaveExtension)).string();
@@ -161,17 +168,26 @@ void launchLoadMenu() {
 
             case 'e':
             clearScreen();
+            title = stw(gs.Title);
+            
+            if(!fs::is_regular_file(gs.Path)) {
+                std::wcerr << L"An error occured while trying to delete " << title << L"\nPress any key to continue...";
+                getChar();
+                break;
+            }
+
             std::wcout << L"Are you sure you want to delete ";
-            std::wcout << stw(gs.Title) << "?\n";
+            std::wcout << title << "?\n";
             std::wcout << L"It has " << fs::file_size(gs.Path) << L" bytes.\n";
             std::wcout << L"[y/N] ";
-            if(const char c=getChar(); c == 'y' || c == 'Y') {
+            if(const char c=std::tolower(getChar()); c == 'y') {
                 fs::remove(gs.Path);
                 saves.erase(saves.begin() + si);
                 savesSize--;
+                if(si == savesSize) si--;
 
                 if(!savesSize) {
-                    std::wcout << L"\nNo saves left\nPress any key yo continue...";
+                    std::wcout << L"\nNo saves left\nPress any key to continue...";
                     getChar();
                     f = 0;
                 }
@@ -330,7 +346,6 @@ bool exec(const u8& idx) {
         break;
 
         case 2:
-        populateSaves();
         launchLoadMenu();
         break;
 
@@ -347,7 +362,10 @@ i32 main(i32 argc, char **argv) {
     LoadSettings();
 
 	#ifdef _WIN32
-    _setmode(_fileno(stdout), _O_U16TEXT);
+    if(!_setmode(_fileno(stdout), _O_U16TEXT)) {
+        std::wcerr << L"Unable to set UTF-16 to the terminal, drawing the board will probably not work, do you wish to continue anyways? [y/N] ";
+        if(std::tolower(getChar()) != 'y') return 1;
+    }
 	#else
 	std::locale::global (std::locale(""));
     initTerminalStates();

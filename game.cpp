@@ -12,12 +12,12 @@
 #endif
 
 u32 cifCount(const u32& n) {
-    return n ? std::log10(n)+1 : 1;
+    return (u32)(n ? std::log10(n)+1 : 1);
 }
 
 Game::Game(const Gamesave& save, bool f) 
     : s(save),
-    BICSZ(pow(2,COLS.size())) {
+    BICSZ(1 << COLS.size()) {
     if(f) {
         AddCell();
         AddCell();
@@ -48,6 +48,8 @@ Game::Game(const Gamesave& save, bool f)
         flushInputBuffer();
         std::wcout << L"\nPress any key to continue...";
         getChar();
+
+        // questionable logic leaving the last save there, TODO fix when adding stats saving for PB's
     }
 }
 
@@ -193,7 +195,7 @@ void Game::AddCell() {
         for(u32 x=0; x< s.BoardSize; x++)
             if(!s.board[y][x]) v.push_back(std::pair<u32,u32>(x,y));
     
-    const std::pair<u32,u32> p = v[getRand(0,v.size()-1)];
+    const std::pair<u32,size_t> p = v[getRand(0,v.size()-1)];
     s.board[p.second][p.first] = getCell(s.difficulty);
     s.newPos = p;
 }
