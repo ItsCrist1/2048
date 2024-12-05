@@ -37,7 +37,7 @@ u32 savesSize;
 u8 idx, si;
 
 u32 boardSz;
-u32 difficulty;
+Difficulty difficulty;
 
 std::shared_ptr<Stats> stats;
 
@@ -238,25 +238,25 @@ void launchLoadMenu() {
 
 void setDefSettings() {
     boardSz = 4;
-    difficulty = 2;
+    difficulty = Medium;
     useCol = 1; 
 }
 
 void loadSettings() {
     std::ifstream is (SettingsPath, std::ios::binary);
-    readu32(is);
-    boardSz = readu32(is);
-    difficulty = readu32(is);
+    readBF<u8>(is);
+    boardSz = readBF<u32>(is);
+    difficulty = readBF<Difficulty>(is);
     useCol = is.get() != 0;
     is.close();
 }
 
 void saveSettings() {
     std::ofstream os (SettingsPath, std::ios::binary);
-    writeu32(os, ValidationMagicNumber);
-    writeu32(os, boardSz);
-    writeu32(os, difficulty);
-    writeu32(os, useCol);
+    writeBF<u8>(os, ValidationMagicNumber);
+    writeBF<u32>(os, boardSz);
+    writeBF<Difficulty>(os, difficulty);
+    writeBF<bool>(os, useCol);
     os.close();
 }
 
@@ -268,7 +268,7 @@ bool LoadSettings() {
     }
 
     std::ifstream is (SettingsPath, std::ios::binary);
-    if(readu32(is) == ValidationMagicNumber) {
+    if(readBF<u8>(is) == ValidationMagicNumber) {
         is.close();
         loadSettings();
         return 1;
@@ -310,7 +310,7 @@ void launchDifficulties() {
             
         if(const u32 n=c-'0'-1; std::isdigit(c)) {
             if(n < 4) {
-                difficulty = n;
+                difficulty = (Difficulty)n;
                 saveSettings();
                 f = 0;
             } else f = n != 4;
@@ -329,7 +329,7 @@ void launchDifficulties() {
             break;
 
             case ' ':
-            if(idx != 4) { difficulty = idx; saveSettings(); }
+            if(idx != 4) { difficulty = (Difficulty)idx; saveSettings(); }
             f = 0;
             break;
 

@@ -80,11 +80,11 @@ void Game::DrawBoard() {
 
         std::wcout << TBL_CRS[1];
         for(u32 x=0; x < s.BoardSize; x++) {
-            const u32 n = s.board[y][x];
+            const u32 n = s.board[y][x] ? (1 << s.board[y][x]) : 0;
             const u32 PAD_SZ = CELL_SZ - cifCount(n);
             std::wcout << std::wstring(PAD_SZ/2+PAD_SZ%2,L' ');
             if(s.newPos.first == x && s.newPos.second == y) std::wcout << getCol(NewColor);
-            else if(s.board[y][x] <= BICSZ && s.board[y][x]) std::wcout << getCol(COLS.at(s.board[y][x]));
+            else if(n <= BICSZ && n) std::wcout << getCol(COLS.at(n));
             if(!n) std::wcout << L' ';
             else std::wcout << n;
             std::wcout << getCol()
@@ -115,10 +115,10 @@ bool Game::Slide(const char& c) {
                 while(i && !s.board[i-1][x]) i--;
 
                 if(i) {
-                    u32* v[3] = { &s.board[y][x], &s.board[i-1][x], &s.board[i][x] };
+                    u8* v[3] = { &s.board[y][x], &s.board[i-1][x], &s.board[i][x] };
                     Combine_Move(v, {1, i != y}, combined[i-1][x]);
                 } else {
-                    u32* v[3] = { &s.board[y][x], nullptr, &s.board[i][x] };
+                    u8* v[3] = { &s.board[y][x], nullptr, &s.board[i][x] };
                     Combine_Move(v, {0, i != y}, combined[i][x]);
                 }
             }
@@ -133,10 +133,10 @@ bool Game::Slide(const char& c) {
                 while(i < s.BoardSize-1 && !s.board[i+1][x]) i++;
                 
                 if(i < s.BoardSize-1) {
-                    u32* v[3] = { &s.board[y][x], &s.board[i+1][x], &s.board[i][x]  };
+                    u8* v[3] = { &s.board[y][x], &s.board[i+1][x], &s.board[i][x]  };
                     Combine_Move(v, {1, i != y}, combined[i+1][x]);
                 } else {
-                    u32* v[3] = { &s.board[y][x], nullptr, &s.board[i][x] };
+                    u8* v[3] = { &s.board[y][x], nullptr, &s.board[i][x] };
                     Combine_Move(v, {0, i != y}, combined[i][x]);
                 }
             }
@@ -152,10 +152,10 @@ bool Game::Slide(const char& c) {
                 while(i && !s.board[y][i-1]) i--;
 
                 if(i) {
-                    u32* v[3] = { &s.board[y][x], &s.board[y][i - 1], &s.board[y][i] };
+                    u8* v[3] = { &s.board[y][x], &s.board[y][i - 1], &s.board[y][i] };
                     Combine_Move(v, { 1, i != x }, combined[y][i]);
                 } else {
-                    u32* v[3] = { &s.board[y][x], nullptr, &s.board[y][i] };
+                    u8* v[3] = { &s.board[y][x], nullptr, &s.board[y][i] };
                     Combine_Move(v, { 0, i != x }, combined[y][i]);
                 }
             }
@@ -170,10 +170,10 @@ bool Game::Slide(const char& c) {
                 while(i < s.BoardSize-1 && !s.board[y][i+1]) i++;
                 
                 if(i < s.BoardSize-1) {
-                    u32* v[3] = { &s.board[y][x], &s.board[y][i+1], &s.board[y][i] };
+                    u8* v[3] = { &s.board[y][x], &s.board[y][i+1], &s.board[y][i] };
                     Combine_Move(v, { 1, i != x }, combined[y][i+1]);
                 } else {
-                    u32* v[3] = { &s.board[y][x], nullptr, &s.board[y][i] };
+                    u8* v[3] = { &s.board[y][x], nullptr, &s.board[y][i] };
                     Combine_Move(v, { 0, i != x }, combined[y][i]);
                 }
             }
@@ -183,9 +183,9 @@ bool Game::Slide(const char& c) {
     } return 1;
 }
 
-void Game::Combine_Move(u32* v[3], const std::pair<bool,bool>& f, std::vector<bool>::reference c) {
+void Game::Combine_Move(u8* v[3], const std::pair<bool,bool>& f, std::vector<bool>::reference c) {
     if(f.first && *v[0] == *v[1] && !c) {
-        *v[1] *= 2; 
+        (*v[1])++; 
         *v[0] = 0;
         c = 1;
 
@@ -223,24 +223,12 @@ bool Game::IsOver() {
     } return 1;
 }
 
-u32 Game::getCell(const u32 dif) {
+u32 Game::getCell(const Difficulty& dif) {
     switch(dif) {
-        case 0:
-        return 4; 
-        break;
-
-        case 1:
-        return getRand(0,6) ? 2 : 4; 
-        break;
-
-        case 2:
-        return getRand(0,10) ? 2 : 4;
-        break;
-
-
-        case 3:
-        return 2;
-        break;
+        case Potato: return 2;
+        case Easy: return getRand(0,6) ? 1 : 2; 
+        case Medium: return getRand(0,10) ? 1 : 2;
+        case Hard: return 1;
     } return 0;
 }
 

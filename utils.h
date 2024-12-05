@@ -11,17 +11,19 @@ namespace fs = std::filesystem;
 using u8 = uint8_t;
 using u32 = uint32_t;
 using i32 = int32_t;
-using u_board = std::vector<std::vector<u32>>;
+using u_board = std::vector<std::vector<u8>>;
 using b_board = std::vector<std::vector<bool>>;
 
 extern bool useCol;
+
+enum Difficulty { Potato, Easy, Medium, Hard };
 
 #ifndef _WIN32
 void initTerminalStates();
 void cleanup(i32);
 #endif
 
-const u32 ValidationMagicNumber = 0x2048;
+const u32 ValidationMagicNumber = 0x2D; // radical of 2048 is ~45.25, 45 in hexadecimal is 0x2D :)
 
 std::wstring stw(const std::string&);
 std::wstring ga(const u32&, const u32);
@@ -29,8 +31,11 @@ std::wstring ga(const u32&, const u32);
 u32 getWidth();
 
 void clearScreen();
-u32 readu32(std::ifstream&);
-void writeu32(std::ofstream&, u32);
+
+template <typename T>
+T readBF(std::ifstream&);
+template <typename T>
+void writeBF(std::ofstream&, T);
 
 struct RGB {
     const u8 r,g,b;
@@ -47,9 +52,9 @@ struct Gamesave {
     u_board board;
     std::pair<u32,u32> newPos;
     bool moved;
-    u32 difficulty;
+    Difficulty difficulty;
     
-    Gamesave(const std::string&, const u32&, const u32);
+    Gamesave(const std::string&, const u32&, const Difficulty&);
     Gamesave(const std::string&);
     void SaveData();
     void LoadData();

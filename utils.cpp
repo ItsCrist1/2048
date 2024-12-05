@@ -33,7 +33,6 @@ void cleanup(i32 sig) {
 
 #endif 
 
-constexpr u8 u32sz = sizeof(u32);
 bool useCol = 1;
 
 std::wstring stw(const std::string& s) {
@@ -68,29 +67,41 @@ void clearScreen() {
     #endif
 }
 
-u32 readu32(std::ifstream& is) {
-    u32 n;
-    is.read(reinterpret_cast<char*>(&n), u32sz);
+template u8 readBF<u8>(std::ifstream& is);
+template u32 readBF<u32>(std::ifstream& is);
+template Difficulty readBF<Difficulty>(std::ifstream& is);
+template bool readBF<bool>(std::ifstream& is);
+
+template <typename T>
+T readBF(std::ifstream& is) {
+    T n;
+    is.read(reinterpret_cast<char*>(&n), sizeof(T));
     return n;
 }
 
-void writeu32(std::ofstream& os, u32 n) {
-    os.write(reinterpret_cast<char*>(&n), u32sz);
+template void writeBF<u8>(std::ofstream& os, u8 n);
+template void writeBF<u32>(std::ofstream& os, u32 n);
+template void writeBF<Difficulty>(std::ofstream& os, Difficulty n);
+template void writeBF<bool>(std::ofstream& os, bool n);
+
+template <typename T>
+void writeBF(std::ofstream& os, T n) {
+    os.write(reinterpret_cast<char*>(&n), sizeof(T));
 }
 
 bool ValidateMagicNumber(const std::string& s) {
     try {
         std::ifstream is (s, std::ios::binary);
-        return readu32(is) == ValidationMagicNumber;
+        return readBF<u8>(is) == ValidationMagicNumber;
     } catch(std::exception ex) { return 0; }
 }
 
-Gamesave::Gamesave(const std::string& s, const u32& sz, const u32 dif) 
+Gamesave::Gamesave(const std::string& s, const u32& sz, const Difficulty& dif) 
 : BoardSize(sz),
   difficulty(dif) {
     Path = s;
     DetermineTitle();
-    board = u_board(sz, std::vector<u32>(sz,0));
+    board = u_board(sz, std::vector<u8>(sz,0));
     BiggestCellCifCount = 1;
     BiggestCell = 2;
     Score = 0;
@@ -108,42 +119,42 @@ void Gamesave::LoadData() {
     DetermineTitle();
 
     std::ifstream is (Path, std::ios::binary);
-    readu32(is);
+    readBF<u8>(is);
 
-    BoardSize = readu32(is);
-    difficulty = readu32(is);
+    BoardSize = readBF<u32>(is);
+    difficulty = readBF<Difficulty>(is);
 
-    board = u_board(BoardSize, std::vector<u32>(BoardSize));
+    board = u_board(BoardSize, std::vector<u8>(BoardSize));
     for(u32 y=0; y < BoardSize; y++)
         for(u32 x=0; x < BoardSize; x++)
-            board[y][x] = readu32(is);
+            board[y][x] = readBF<u8>(is);
 
-    BiggestCellCifCount = readu32(is);
-    BiggestCell = readu32(is);
-    Score = readu32(is);
-    newPos = { readu32(is), readu32(is) };
+    BiggestCellCifCount = readBF<u32>(is);
+    BiggestCell = readBF<u32>(is);
+    Score = readBF<u32>(is);
+    newPos = { readBF<u32>(is), readBF<u32>(is) };
     moved = is.get() != 0;
     is.close();
 }
 
 void Gamesave::SaveData() {
     std::ofstream os (Path, std::ios::binary);
-    writeu32(os, ValidationMagicNumber);
+    writeBF<u8>(os, ValidationMagicNumber);
 
-    writeu32(os, BoardSize);
-    writeu32(os, difficulty);
+    writeBF<u32>(os, BoardSize);
+    writeBF<Difficulty>(os, difficulty);
 
-    for(const std::vector<u32>& v : board)
+    for(const std::vector<u8>& v : board)
         for(const u32& i : v)
-            writeu32(os, i);
+            writeBF<u8>(os, i);
 
-    writeu32(os, BiggestCellCifCount);
-    writeu32(os, BiggestCell);
-    writeu32(os, Score);
+    writeBF<u32>(os, BiggestCellCifCount);
+    writeBF<u32>(os, BiggestCell);
+    writeBF<u32>(os, Score);
 
-    writeu32(os, newPos.first);
-    writeu32(os, newPos.second);
-    writeu32(os, moved);
+    writeBF<u32>(os, newPos.first);
+    writeBF<u32>(os, newPos.second);
+    writeBF<bool>(os, moved);
     os.close();
 }
 
@@ -167,22 +178,22 @@ Stats::Stats(const std::string& s, bool b) {
 
 void Stats::SaveData() {
     std::ofstream os (path, std::ios::binary);
-    writeu32(os, ValidationMagicNumber);
+    writeBF<u8>(os, ValidationMagicNumber);
     
-    for(u32 i=0; i < 4; i++) writeu32(os, moves[i]);
-    writeu32(os, biggestTile);
-    writeu32(os, biggestScore);
+    for(u32 i=0; i < 4; i++) writeBF<u32>(os, moves[i]);
+    writeBF<u32>(os, biggestTile);
+    writeBF<u32>(os, biggestScore);
 
     os.close();
 };
 
 void Stats::LoadData() {
     std::ifstream is (path, std::ios::binary);
-    readu32(is);
+    readBF<u8>(is);
 
-    for(u32 i=0; i < 4; i++) moves[i] = readu32(is);
-    biggestTile = readu32(is);
-    biggestScore = readu32(is);
+    for(u32 i=0; i < 4; i++) moves[i] = readBF<u32>(is);
+    biggestTile = readBF<u32>(is);
+    biggestScore = readBF<u32>(is);
 
     is.close();
 }
