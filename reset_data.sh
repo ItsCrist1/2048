@@ -1,2 +1,1 @@
-rm -rf saves
-rm -f settings.dat
+rm -rf saves settings.dat stats.dat

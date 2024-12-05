@@ -4,6 +4,7 @@
 #include <cctype>
 #include <filesystem>
 #include <iostream>
+#include <memory>
 #include <string>
 #include <vector>
 #include <fstream>
@@ -22,6 +23,7 @@ const std::string SaveDirectory = "saves";
 const std::string DefaultSaveTitle = "Unnamed-Save-";
 const std::string SaveExtension = ".dat";
 const std::string SettingsPath = "settings.dat";
+const std::string StatsPath = "stats.dat";
 
 const u32 MaxBoardSz = 128;
 
@@ -34,6 +36,23 @@ u8 idx, si;
 u32 boardSz;
 u32 difficulty;
 
+std::shared_ptr<Stats> stats;
+
+bool LoadStats() {
+    if(!fs::is_regular_file(StatsPath)) {
+        stats = std::make_shared<Stats>(StatsPath, 0);
+        return 1;
+    }
+
+    stats = std::make_shared<Stats>(StatsPath, 1);
+    if(!stats->isValid) {
+        std::wcerr << L"Statistics file " << stw(StatsPath) << L" is not valid, would you like to delete it to be able to load in? [Y/n] ";
+        if(std::tolower(getChar()) == 'n') return 0;
+        
+        stats = std::make_shared<Stats>(StatsPath, 0);
+    } return 1;
+}
+
 std::wstring getLastEdit(const std::string& s) {
     auto ftime = fs::last_write_time(s);
     auto sctp = std::chrono::system_clock::from_time_t(
@@ -41,12 +60,12 @@ std::wstring getLastEdit(const std::string& s) {
     std::time_t cftime = std::chrono::system_clock::to_time_t(sctp);
 
     std::tm timeStruct;
-#ifdef _WIN32
+    #ifdef _WIN32
     localtime_s(&timeStruct, &cftime);
-#else
+    #else
     std::tm* tmPtr = std::localtime(&cftime);
     timeStruct = *tmPtr;
-#endif
+    #endif
 
     std::wstringstream wss;
     wss << std::put_time(&timeStruct, L"%d.%m.%Y | %H:%M:%S");
@@ -220,14 +239,26 @@ void saveSettings() {
     os.close();
 }
 
-void LoadSettings() {
-    if(fs::is_regular_file(SettingsPath)) {
-        std::ifstream is (SettingsPath, std::ios::binary);
-        if(readu32(is) == ValidationMagicNumber) {
-            loadSettings();
-            return;
-        }
-    } setDefSettings(); saveSettings();
+bool LoadSettings() {
+    if(!fs::is_regular_file(SettingsPath)) {
+        setDefSettings();
+        saveSettings();
+        return 1;
+    }
+
+    std::ifstream is (SettingsPath, std::ios::binary);
+    if(readu32(is) == ValidationMagicNumber) {
+        is.close();
+        loadSettings();
+        return 1;
+    } else {
+        is.close();
+        std::wcerr << L"Settings file " << stw(SettingsPath) << L" is not valid, would you like to delete it to be able to load in? [Y/n] ";
+        if(std::tolower(getChar()) == 'n') return 0;
+        
+        setDefSettings();
+        saveSettings();
+    } return 1;
 }
 
 void drawSettings(const u8& idx) {
@@ -359,7 +390,6 @@ bool exec(const u8& idx) {
 
 i32 main(i32 argc, char **argv) {
     if(!fs::is_directory(SaveDirectory)) fs::create_directory(SaveDirectory);
-    LoadSettings();
 
 	#ifdef _WIN32
     if(!_setmode(_fileno(stdout), _O_U16TEXT)) {
@@ -371,6 +401,7 @@ i32 main(i32 argc, char **argv) {
     initTerminalStates();
 	#endif
 
+    if(!LoadSettings() || !LoadStats()) return 1;
     bool f = 1;
 
     while(f) {

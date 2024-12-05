@@ -61,6 +61,13 @@ void writeu32(std::ofstream& os, u32 n) {
     os.write(reinterpret_cast<char*>(&n), u32sz);
 }
 
+bool ValidateMagicNumber(const std::string& s) {
+    try {
+        std::ifstream is (s, std::ios::binary);
+        return readu32(is) == ValidationMagicNumber;
+    } catch(std::exception ex) { return 0; }
+}
+
 Gamesave::Gamesave(const std::string& s, const u32& sz, const u32 dif) 
 : BoardSize(sz),
   difficulty(dif) {
@@ -71,13 +78,6 @@ Gamesave::Gamesave(const std::string& s, const u32& sz, const u32 dif)
     BiggestCell = 2;
     Score = 0;
     moved = 1;
-}
-
-bool ValidateMagicNumber(const std::string& s) {
-    try {
-        std::ifstream is (s, std::ios::binary);
-        return readu32(is) == ValidationMagicNumber;
-    } catch(std::exception ex) { return 0; }
 }
 
 Gamesave::Gamesave(const std::string& s) {
@@ -132,6 +132,42 @@ void Gamesave::SaveData() {
 
 void Gamesave::DetermineTitle() {
     Title = fs::path(Path).stem().string();
+}
+
+Stats::Stats(const std::string& s, bool b) {
+    path = s;
+
+    if(b) {
+        if((isValid = ValidateMagicNumber(s)))
+            LoadData();
+    } else {
+        moves.fill(0);
+        biggestTile = 0;
+        biggestScore = 0;
+        SaveData();
+    }
+}
+
+void Stats::SaveData() {
+    std::ofstream os (path, std::ios::binary);
+    writeu32(os, ValidationMagicNumber);
+    
+    for(u32 i=0; i < 4; i++) writeu32(os, moves[i]);
+    writeu32(os, biggestTile);
+    writeu32(os, biggestScore);
+
+    os.close();
+};
+
+void Stats::LoadData() {
+    std::ifstream is (path, std::ios::binary);
+    readu32(is);
+
+    for(u32 i=0; i < 4; i++) moves[i] = readu32(is);
+    biggestTile = readu32(is);
+    biggestScore = readu32(is);
+
+    is.close();
 }
 
 RGB::RGB(const u8& r, const u8& g, const u8& b) : r(r), g(g), b(b) {}

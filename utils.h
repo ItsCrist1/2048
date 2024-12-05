@@ -39,10 +39,12 @@ struct RGB {
 
 struct Gamesave {
     std::string Title, Path;
+    bool isValid;
+
     u32 BoardSize, BiggestCellCifCount, BiggestCell, Score;
     u_board board;
     std::pair<u32,u32> newPos;
-    bool moved, isValid;
+    bool moved;
     u32 difficulty;
     
     Gamesave(const std::string&, const u32&, const u32);
@@ -50,6 +52,20 @@ struct Gamesave {
     void SaveData();
     void LoadData();
     void DetermineTitle();
+};
+
+struct Stats {
+    std::string path;
+    bool isValid;
+
+    std::array<u32,4> moves;
+    u32 biggestTile;
+    u32 biggestScore;
+    
+    Stats();
+    Stats(const std::string& s, bool);
+    void SaveData();
+    void LoadData();
 };
 
 std::wstring getCol(const RGB& rgb);
