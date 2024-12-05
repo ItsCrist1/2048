@@ -80,8 +80,9 @@ void Game::DrawBoard() {
 
         std::wcout << TBL_CRS[1];
         for(u32 x=0; x < s.BoardSize; x++) {
-            const u32 n = s.board[y][x] ? (1 << s.board[y][x]) : 0;
-            const u32 PAD_SZ = CELL_SZ - cifCount(n);
+            const u32 n = s.board[y][x] ? (1 << s.board[y][x]) : 0, cc = cifCount(n);
+            s.BiggestCellCifCount = std::max(s.BiggestCellCifCount, cc);
+            const u32 PAD_SZ = CELL_SZ - cc;
             std::wcout << std::wstring(PAD_SZ/2+PAD_SZ%2,L' ');
             if(s.newPos.first == x && s.newPos.second == y) std::wcout << getCol(NewColor);
             else if(n <= BICSZ && n) std::wcout << getCol(COLS.at(n));
@@ -189,7 +190,6 @@ void Game::Combine_Move(u8* v[3], const std::pair<bool,bool>& f, std::vector<boo
         *v[0] = 0;
         c = 1;
 
-        if(const u32 n=cifCount(*v[1]); n > s.BiggestCellCifCount) s.BiggestCellCifCount = n;
         s.BiggestCell = s.BiggestCell < *v[1] ? *v[1] : s.BiggestCell;
         s.Score += *v[1];
         s.moved = 1;
