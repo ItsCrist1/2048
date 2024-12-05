@@ -12,7 +12,7 @@ u32 getBiggest(const u_board&);
 
 class Game {
 public:
-    Game(const Gamesave&, bool);
+    Game(const Gamesave&, const std::shared_ptr<Stats>&, bool);
 
 private:
     const std::unordered_map<u32,RGB> COLS {
@@ -37,8 +37,10 @@ private:
     const std::wstring TBL_CRS = L"─│┌┐└┘┴┬├┤┼";
     
     Gamesave s;
+    std::shared_ptr<Stats> stats;
     std::mt19937 rng = std::mt19937(std::random_device{}());
-
+    
+    void SaveStats();
     void DrawBoard();
     bool Slide(const char&);
     void Combine_Move(u32*[3], const std::pair<bool,bool>&, std::vector<bool>::reference);

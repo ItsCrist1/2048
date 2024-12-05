@@ -15,8 +15,15 @@ u32 cifCount(const u32& n) {
     return (u32)(n ? std::log10(n)+1 : 1);
 }
 
-Game::Game(const Gamesave& save, bool f) 
+void Game::SaveStats() {
+    stats->biggestTile = std::max(stats->biggestTile, s.BiggestCell);
+    stats->biggestScore = std::max(stats->biggestScore, s.Score);
+    stats->SaveData();
+}
+
+Game::Game(const Gamesave& save, const std::shared_ptr<Stats>& sp, bool f) 
     : s(save),
+      stats(sp),
     BICSZ(1 << COLS.size()) {
     if(f) {
         AddCell();
@@ -43,12 +50,13 @@ Game::Game(const Gamesave& save, bool f)
         std::wcout << getCol(GameOverColor) << L"\n\nGame Over!\n";
         std::wcout << getCol(ScoreColor) << L"Score: " << s.Score;
         std::wcout << getCol(BiggestCellColor) << L"\nBiggest: " << s.BiggestCell << getCol() << std::endl;
-    
+        
         std::this_thread::sleep_for(std::chrono::seconds(3));
         flushInputBuffer();
         std::wcout << L"\nPress any key to continue...";
         getChar();
 
+        SaveStats();
         // questionable logic leaving the last save there, TODO fix when adding stats saving for PB's
     }
 }
@@ -99,6 +107,7 @@ bool Game::Slide(const char& c) {
     s.moved = 0;
     switch (c) {
         case 'w':
+        stats->moves[0]++;
         for(u32 x=0; x < s.BoardSize; x++) {
             for(u32 y=1; y < s.BoardSize; y++) {
                 if(!s.board[y][x]) continue;
@@ -116,6 +125,7 @@ bool Game::Slide(const char& c) {
         } break;
 
         case 's':
+        stats->moves[1]++;
         for(u32 x=0; x < s.BoardSize; x++) {
             for(u32 y=s.BoardSize-2; y != (u32)-1; y--) {
                 if(!s.board[y][x]) continue;
@@ -133,6 +143,7 @@ bool Game::Slide(const char& c) {
         } break;
 
         case 'a':
+        stats->moves[2]++;
         for(u32 y=0; y < s.BoardSize; y++) {
             for(u32 x=1; x < s.BoardSize; x++) {
                 if(!s.board[y][x]) continue;
@@ -151,6 +162,7 @@ bool Game::Slide(const char& c) {
         } break;
 
         case 'd':
+        stats->moves[3]++;
         for(u32 y=0; y < s.BoardSize; y++) {
             for(u32 x=s.BoardSize-2; x != (u32)-1; x--) {
                 if(!s.board[y][x]) continue;

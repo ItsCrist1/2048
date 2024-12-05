@@ -26,6 +26,8 @@ const u32 ValidationMagicNumber = 0x2048;
 std::wstring stw(const std::string&);
 std::wstring ga(const u32&, const u32);
 
+u32 getWidth();
+
 void clearScreen();
 u32 readu32(std::ifstream&);
 void writeu32(std::ofstream&, u32);

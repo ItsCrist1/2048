@@ -2,6 +2,7 @@
 #include <iostream>
 #include <fstream>
 #include <exception>
+#include <unistd.h>
 
 #ifdef _WIN32
 #include <conio.h>
@@ -41,6 +42,22 @@ std::wstring stw(const std::string& s) {
 
 std::wstring ga(const u32& a, const u32 b) { 
     return a==b && !useCol ? L"*\n" : L"\n";
+}
+
+u32 getWidth() {
+    #ifdef _WIN32
+    CONSOLE_SCREEN_BUFFER_INFO csbi;
+    HANDLE hc = GetStdHandle(STD_OUTPUT_HANDLE);
+    
+    if(hc == INVALID_HANDLE_VALUE
+       || !GetConsoleScreenBufferInfo(hc, &csbi)) return 0;
+    
+    return csbi.srWindow.Right - csbi.srWindow.Left + 1;
+
+    #else
+    struct winsize wsz;
+    return ioctl(STDOUT_FILENO, TIOCGWINSZ, &wsz)==-1? 0 : wsz.ws_col;
+    #endif
 }
 
 void clearScreen() {

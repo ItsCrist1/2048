@@ -19,6 +19,8 @@
 
 const RGB SelectedColor = RGB(245,212,66);
 const RGB UnselectedColor = RGB(112,109,96);
+const RGB ValueColor = RGB(155,219,86);
+
 const std::string SaveDirectory = "saves";
 const std::string DefaultSaveTitle = "Unnamed-Save-";
 const std::string SaveExtension = ".dat";
@@ -26,6 +28,7 @@ const std::string SettingsPath = "settings.dat";
 const std::string StatsPath = "stats.dat";
 
 const u32 MaxBoardSz = 128;
+const bool FitsArt = getWidth() >= 40;
 
 const std::wstring DIFF [4] = { L"Potato", L"Easy", L"Medium", L"Hard" };
 
@@ -37,6 +40,18 @@ u32 boardSz;
 u32 difficulty;
 
 std::shared_ptr<Stats> stats;
+
+void printTitleArt() {
+    std::wcout << getCol(ValueColor)
+               << LR"(  /$$$$$$   /$$$$$$  /$$   /$$  /$$$$$$ )" << L'\n'
+               << LR"( /$$__  $$ /$$$_  $$| $$  | $$ /$$__  $$)" << L'\n'
+               << LR"(|__/  \ $$| $$$$\ $$| $$  | $$| $$  \ $$)" << L'\n'
+               << LR"(  /$$$$$$/| $$ $$ $$| $$$$$$$$|  $$$$$$/)" << L'\n'
+               << LR"( /$$____/ | $$\ $$$$|_____  $$ >$$__  $$)" << L'\n'
+               << LR"(| $$      | $$ \ $$$      | $$| $$  \ $$)" << L'\n'
+               << LR"(| $$$$$$$$|  $$$$$$/      | $$|  $$$$$$/)" << L'\n'
+               << LR"(|________/ \______/       |__/ \______/ )" << L"\n\n";
+}
 
 bool LoadStats() {
     if(!fs::is_regular_file(StatsPath)) {
@@ -86,10 +101,16 @@ void populateSaves() {
 
 void draw(const u32& idx) {
     clearScreen();
+
+    if(FitsArt) printTitleArt();
+    else std::wcout << getCol(ValueColor) << L"--- 2048 ---\n\n";
+
     std::wcout << getCol(!idx?SelectedColor:UnselectedColor) << L"1) New " << ga(idx,0)
                << getCol(idx==1?SelectedColor:UnselectedColor) << L"2) Load " << ga(idx,1)
                << getCol(idx==2?SelectedColor:UnselectedColor) << L"3) Settings " << ga(idx,2)
-               << getCol(idx==3?SelectedColor:UnselectedColor) << L"4) Quit " << ga(idx,3)
+               << getCol(idx==3?SelectedColor:UnselectedColor) << L"4) Stats " << ga(idx,3)
+               << getCol(idx==4?SelectedColor:UnselectedColor) << L"5) Help " << ga(idx,4)
+               << getCol(idx==5?SelectedColor:UnselectedColor) << L"6) Quit " << ga(idx,5)
                << getCol();
 }
 
@@ -135,7 +156,7 @@ void launchLoadMenu() {
         if(const u32 cd=c-'0'; 
             std::isdigit(c) && cd > 0
             && cd <= savesSize) {
-            Game(saves[cd-1], 0);
+            Game(saves[cd-1], stats, 0);
             saves[cd-1].LoadData();
             continue;
         }
@@ -155,7 +176,7 @@ void launchLoadMenu() {
             break;
 
             case ' ': 
-            Game(saves[si], 0); 
+            Game(saves[si], stats, 0); 
             saves[si].LoadData();
             break;
 
@@ -334,9 +355,7 @@ bool execSettings(const u8& idx) {
         break;
 
         case 1: launchDifficulties(); break;
-
         case 2: useCol = !useCol; saveSettings(); break;
-
         case 3: return 0;
     } 
     return 1;
@@ -373,7 +392,9 @@ void launchSettingsMenu() {
 bool exec(const u8& idx) {
     switch(idx) {
         case 1:
-        Game(Gamesave(getFirstValidName(),boardSz,difficulty), 1);
+        Game(
+             Gamesave(getFirstValidName(),boardSz,difficulty), 
+             stats, 1);
         break;
 
         case 2:
@@ -384,7 +405,35 @@ bool exec(const u8& idx) {
         launchSettingsMenu(); 
         break;
 
-        case 4: return 0;
+        case 4:
+        std::wcout << L"Slides:\n"
+                   << L"Right: " << getCol(ValueColor) << stats->moves[3]
+                   << getCol() << L" Left: " << getCol(ValueColor) << stats->moves[2]
+                   << getCol() << L"\nUp: " << getCol(ValueColor) << stats->moves[0]
+                   << getCol() << L" Down: " << getCol(ValueColor) << stats->moves[1]
+
+                   << getCol() << L"\n\nBiggest Score Achieved: " << getCol(ValueColor) << stats->biggestScore
+                   << getCol() << L"\nBiggest Tile Achieved: " << getCol(ValueColor) << stats->biggestTile
+
+                   << L"\n\nPress any key to continue...";
+        getChar();
+        break;
+
+        case 5:
+        std::wcout << L"Instructions\n"
+                   << getCol(ValueColor) << L"--- UI ---\n\n"
+                   << getCol() << L"WASD or arrow keys to move\nEnter or space to select\nQ to quit/go back\nAny digit to select a menu item\n\n"
+                   << getCol(ValueColor) << L"--- Load Menu ---\n\n"
+                   << getCol() << L"Same controls as all the other UI\nr -> refresh saves\ny -> rename save\ne -> erase save\n\n"
+                   << getCol(ValueColor) << L"--- Game ---\n\n"
+                   << getCol() << L"WASD or arrow keys to move\nq -> quit"
+
+                   << getCol(ValueColor) << L"\n\nPress any key to continue...";
+
+        getChar();
+        break;
+
+        case 6: return 0;
     } return 1;
 }
 
@@ -403,7 +452,7 @@ i32 main(i32 argc, char **argv) {
 
     if(!LoadSettings() || !LoadStats()) return 1;
     bool f = 1;
-
+    
     while(f) {
         draw(idx);
         const char c = getChar();
@@ -415,10 +464,10 @@ i32 main(i32 argc, char **argv) {
 
         switch(c) {
             case 'w':
-            case 'a': idx += idx ? -1 : 3; break;
+            case 'a': idx += idx ? -1 : 5; break;
 
             case 's':
-            case 'd': idx += idx < 3 ? 1 : -3; break;
+            case 'd': idx += idx < 5 ? 1 : -5; break;
 
             case ' ': f = exec(idx+1); break;
 
