@@ -128,7 +128,7 @@ void drawLoad(const u32& idx) {
         std::wcout << getCol(idx==i?SelectedColor:UnselectedColor)
                    << i+1 << L") " << stw(g.Title) << L" (" << fs::file_size(g.Path) << L" bytes) " << ga(idx,i)
                    << getCol() << L"Board Size: " << g.BoardSize << L" | Difficulty: " << DIFF[g.difficulty] << L'\n'
-                   << L"Score: " << g.Score << L" Biggest Cell: " << g.BiggestCell << L'\n'
+                   << L"Score: " << g.Score << L" Biggest Cell: " << (1<<g.BiggestCell) << L'\n'
                    << L"Last edited: " << getLastEdit(g.Path) << L"\n\n"; 
     }
 }
@@ -413,7 +413,7 @@ bool exec(const u8& idx) {
                    << getCol() << L" Down: " << getCol(ValueColor) << stats->moves[1]
 
                    << getCol() << L"\n\nBiggest Score Achieved: " << getCol(ValueColor) << stats->biggestScore
-                   << getCol() << L"\nBiggest Tile Achieved: " << getCol(ValueColor) << stats->biggestTile
+                   << getCol() << L"\nBiggest Tile Achieved: " << getCol(ValueColor) << (1<<stats->biggestTile)
 
                    << L"\n\nPress any key to continue...";
         getChar();

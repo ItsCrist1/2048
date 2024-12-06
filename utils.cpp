@@ -103,7 +103,7 @@ Gamesave::Gamesave(const std::string& s, const u32& sz, const Difficulty& dif)
     DetermineTitle();
     board = u_board(sz, std::vector<u8>(sz,0));
     BiggestCellCifCount = 1;
-    BiggestCell = 2;
+    BiggestCell = 1;
     Score = 0;
     moved = 1;
 }
@@ -130,8 +130,8 @@ void Gamesave::LoadData() {
             board[y][x] = readBF<u8>(is);
 
     BiggestCellCifCount = readBF<u32>(is);
-    BiggestCell = readBF<u32>(is);
-    Score = readBF<u32>(is);
+    BiggestCell = readBF<u8>(is);
+    Score = readBF<u64>(is);
     newPos = { readBF<u32>(is), readBF<u32>(is) };
     moved = is.get() != 0;
     is.close();
@@ -149,8 +149,8 @@ void Gamesave::SaveData() {
             writeBF<u8>(os, i);
 
     writeBF<u32>(os, BiggestCellCifCount);
-    writeBF<u32>(os, BiggestCell);
-    writeBF<u32>(os, Score);
+    writeBF<u8>(os, BiggestCell);
+    writeBF<u64>(os, Score);
 
     writeBF<u32>(os, newPos.first);
     writeBF<u32>(os, newPos.second);
@@ -170,7 +170,7 @@ Stats::Stats(const std::string& s, bool b) {
             LoadData();
     } else {
         moves.fill(0);
-        biggestTile = 0;
+        biggestTile = 1;
         biggestScore = 0;
         SaveData();
     }
@@ -181,8 +181,8 @@ void Stats::SaveData() {
     writeBF<u8>(os, ValidationMagicNumber);
     
     for(u32 i=0; i < 4; i++) writeBF<u32>(os, moves[i]);
-    writeBF<u32>(os, biggestTile);
-    writeBF<u32>(os, biggestScore);
+    writeBF<u8>(os, biggestTile);
+    writeBF<u64>(os, biggestScore);
 
     os.close();
 };
@@ -192,8 +192,8 @@ void Stats::LoadData() {
     readBF<u8>(is);
 
     for(u32 i=0; i < 4; i++) moves[i] = readBF<u32>(is);
-    biggestTile = readBF<u32>(is);
-    biggestScore = readBF<u32>(is);
+    biggestTile = readBF<u8>(is);
+    biggestScore = readBF<u64>(is);
 
     is.close();
 }
