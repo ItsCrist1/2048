@@ -92,7 +92,7 @@ void populateSaves() {
     saves.clear();
     u32 j = 0;
     for(const auto& i : fs::directory_iterator(SaveDirectory)) {
-        const fs::path fp (i);
+        const fs::path& fp (i);
         if(!fs::is_regular_file(fp) || fp.extension().string() != SaveExtension) continue;
         const Gamesave gs (i.path().string());
         if(gs.isValid) { saves.push_back(gs); j++; }

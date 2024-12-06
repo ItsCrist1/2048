@@ -36,7 +36,7 @@ void cleanup(i32 sig) {
 bool useCol = 1;
 
 std::wstring stw(const std::string& s) {
-    return std::wstring(s.begin(), s.end());
+    return {s.begin(), s.end()};
 }
 
 std::wstring ga(const u32& a, const u32 b) { 
