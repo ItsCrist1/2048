@@ -1,4 +1,16 @@
 version = 1
 
 [[analyzers]]
-name = "shell"
+name = "cpp"
+enabled = true
+include_patterns = [
+    "**/*.cpp",
+    "**/*.h"
+]
+exclude_patterns = [
+    "bin/",
+    "saves/",
+    "**/*.dat",
+    "exec.sh",
+    "reset_data.sh"
+]
