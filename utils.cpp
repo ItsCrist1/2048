@@ -2,7 +2,7 @@
 #include <iostream>
 #include <fstream>
 #include <exception>
-#include <unistd.h>
+#include <sstream>
 
 #ifdef _WIN32
 #include <windows.h>
@@ -11,6 +11,7 @@
 #else
 #include <termio.h>
 #include <csignal>
+#include <unistd.h>
 
 struct termios oldt, newt;
 
@@ -222,9 +223,11 @@ void flushInputBuffer() {
     #endif
 }
 
+#include <limits>
+
 void clearInputBuffer() {
     std::cin.clear();
-    std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+    std::cin.ignore((std::numeric_limits<std::streamsize>::max)(), '\n');
 }
 
 char getChar() {

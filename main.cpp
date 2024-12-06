@@ -11,10 +11,12 @@
 
 #ifdef _WIN32
 #include <windows.h>
+#include <corecrt_io.h>
 #include <fcntl.h>
 #else
 #include <locale>
 #endif
+
 
 const RGB SelectedColor = RGB(245,212,66);
 const RGB UnselectedColor = RGB(112,109,96);
@@ -67,26 +69,6 @@ bool LoadStats() {
     } return 1;
 }
 
-std::wstring getLastEdit(const std::string& s) {
-    auto ftime = fs::last_write_time(s);
-    auto sctp = std::chrono::system_clock::from_time_t(
-        std::chrono::duration_cast<std::chrono::seconds>(ftime.time_since_epoch()).count());
-    std::time_t cftime = std::chrono::system_clock::to_time_t(sctp);
-
-    std::tm timeStruct;
-    #ifdef _WIN32
-    localtime_s(&timeStruct, &cftime);
-    #else
-    std::tm* tmPtr = std::localtime(&cftime);
-    timeStruct = *tmPtr;
-    #endif
-
-    std::wstringstream wss;
-    wss << std::put_time(&timeStruct, L"%d.%m.%Y | %H:%M:%S");
-    return wss.str();
-}
-
-
 void populateSaves() {
     saves.clear();
     u32 j = 0;
@@ -127,8 +109,7 @@ void drawLoad(const u32& idx) {
         std::wcout << getCol(idx==i?SelectedColor:UnselectedColor)
                    << i+1 << L") " << stw(g.Title) << L" (" << fs::file_size(g.Path) << L" bytes) " << ga(idx,i)
                    << getCol() << L"Board Size: " << g.BoardSize << L" | Difficulty: " << DIFF[g.difficulty] << L'\n'
-                   << L"Score: " << g.Score << L" Biggest Cell: " << (1<<g.BiggestCell) << L'\n'
-                   << L"Last edited: " << getLastEdit(g.Path) << L"\n\n"; 
+                   << L"Score: " << g.Score << L" Biggest Cell: " << (1<<g.BiggestCell) << L"\n\n";
     }
 }
 
