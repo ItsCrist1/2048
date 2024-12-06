@@ -5,7 +5,9 @@
 #include <unistd.h>
 
 #ifdef _WIN32
+#include <windows.h>
 #include <conio.h>
+#undef RGB
 #else
 #include <termio.h>
 #include <csignal>

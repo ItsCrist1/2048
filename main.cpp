@@ -11,7 +11,6 @@
 
 #ifdef _WIN32
 #include <windows.h>
-#include <corecrt_io.h>
 #include <fcntl.h>
 #else
 #include <locale>
