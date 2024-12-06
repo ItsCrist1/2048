@@ -3,3 +3,5 @@ bin/*
 saves/
 settings.dat
 stats.dat
+/.vs
+/out/build/x64-Debug
