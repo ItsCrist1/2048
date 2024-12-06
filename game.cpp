@@ -49,16 +49,15 @@ Game::Game(const Gamesave& save, const std::shared_ptr<Stats>& sp, bool f)
     if(state == 2) {
         std::wcout << getCol(GameOverColor) << L"\n\nGame Over!\n";
         std::wcout << getCol(ScoreColor) << L"Score: " << s.Score;
-        std::wcout << getCol(BiggestCellColor) << L"\nBiggest: " << s.BiggestCell << getCol() << std::endl;
+        std::wcout << getCol(BiggestCellColor) << L"\nBiggest: " << (1<<s.BiggestCell) << getCol() << std::endl;
         
         std::this_thread::sleep_for(std::chrono::seconds(3));
         flushInputBuffer();
         std::wcout << L"\nPress any key to continue...";
         getChar();
 
-        SaveStats();
         // questionable logic leaving the last save there, TODO fix when adding stats saving for PB's
-    }
+    } SaveStats();
 }
 
 void Game::DrawBoard() {
@@ -81,7 +80,6 @@ void Game::DrawBoard() {
         std::wcout << TBL_CRS[1];
         for(u32 x=0; x < s.BoardSize; x++) {
             const u32 n = s.board[y][x] ? (1 << s.board[y][x]) : 0, cc = cifCount(n);
-            s.BiggestCellCifCount = std::max(s.BiggestCellCifCount, cc);
             const u32 PAD_SZ = CELL_SZ - cc;
             std::wcout << std::wstring(PAD_SZ/2+PAD_SZ%2,L' ');
             if(s.newPos.first == x && s.newPos.second == y) std::wcout << getCol(NewColor);
@@ -100,7 +98,7 @@ void Game::DrawBoard() {
     } std::wcout << TBL_CRS[5] << L"\n\n";
 
     std::wcout << getCol(ScoreColor) << L"Score: " << s.Score;
-    std::wcout << getCol(BiggestCellColor) << L"\nBiggestCell: " << s.BiggestCell << getCol() << std::endl;
+    std::wcout << getCol(BiggestCellColor) << L"\nBiggestCell: " << (1<<s.BiggestCell) << getCol() << std::endl;
 }
 
 bool Game::Slide(const char& c) {
@@ -190,8 +188,12 @@ void Game::Combine_Move(u8* v[3], const std::pair<bool,bool>& f, std::vector<boo
         *v[0] = 0;
         c = 1;
 
-        s.BiggestCell = s.BiggestCell < *v[1] ? *v[1] : s.BiggestCell;
-        s.Score += *v[1];
+        if(*v[1] > s.BiggestCell) {
+            s.BiggestCell = *v[1];
+            s.BiggestCellCifCount = cifCount(1<<*v[1]);
+        }
+
+        s.Score += 1<<*v[1];
         s.moved = 1;
     } else if(f.second) {
         *v[2] = *v[0];

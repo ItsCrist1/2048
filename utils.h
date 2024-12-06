@@ -10,6 +10,7 @@ namespace fs = std::filesystem;
 
 using u8 = uint8_t;
 using u32 = uint32_t;
+using u64 = uint64_t;
 using i32 = int32_t;
 using u_board = std::vector<std::vector<u8>>;
 using b_board = std::vector<std::vector<bool>>;
@@ -47,8 +48,10 @@ struct RGB {
 struct Gamesave {
     std::string Title, Path;
     bool isValid;
-
-    u32 BoardSize, BiggestCellCifCount, BiggestCell, Score;
+    
+    u64 Score;
+    u32 BoardSize, BiggestCellCifCount;
+    u8 BiggestCell;
     u_board board;
     std::pair<u32,u32> newPos;
     bool moved;
@@ -66,8 +69,8 @@ struct Stats {
     bool isValid;
 
     std::array<u32,4> moves;
-    u32 biggestTile;
-    u32 biggestScore;
+    u8 biggestTile;
+    u64 biggestScore;
     
     Stats();
     Stats(const std::string& s, bool);
