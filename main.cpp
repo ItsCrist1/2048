@@ -17,7 +17,6 @@
 #include <locale>
 #endif
 
-
 const RGB SelectedColor = RGB(245,212,66);
 const RGB UnselectedColor = RGB(112,109,96);
 const RGB ValueColor = RGB(155,219,86);
@@ -29,7 +28,6 @@ const std::string SettingsPath = "settings.dat";
 const std::string StatsPath = "stats.dat";
 
 const u32 MaxBoardSz = 128;
-const bool FitsArt = getWidth() >= 40;
 
 const std::wstring DIFF [4] = { L"Potato", L"Easy", L"Medium", L"Hard" };
 
@@ -83,7 +81,7 @@ void populateSaves() {
 void draw(const u32& idx) {
     clearScreen();
 
-    if(FitsArt) printTitleArt();
+    if(getWidth() > 40) printTitleArt();
     else std::wcout << getCol(ValueColor) << L"--- 2048 ---\n\n";
 
     std::wcout << getCol(!idx?SelectedColor:UnselectedColor) << L"1) New " << ga(idx,0)
