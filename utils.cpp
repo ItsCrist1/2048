@@ -36,13 +36,13 @@ void cleanup(i32 sig) {
 
 #endif 
 
-bool useCol = 1;
+bool useCol = true;
 
 std::wstring stw(const std::string& s) {
     return {s.begin(), s.end()};
 }
 
-std::wstring ga(const u32& a, const u32 b) { 
+std::wstring ga(u32 a, u32 b) { 
     return a==b && !useCol ? L"*\n" : L"\n";
 }
 
@@ -96,10 +96,10 @@ bool ValidateMagicNumber(const std::string& s) {
     try {
         std::ifstream is (s, std::ios::binary);
         return readBF<u8>(is) == ValidationMagicNumber;
-    } catch(std::exception ex) { return 0; }
+    } catch(const std::exception& ex) { return false; }
 }
 
-Gamesave::Gamesave(const std::string& s, const u32& sz, const Difficulty& dif) 
+Gamesave::Gamesave(const std::string& s, u32 sz, Difficulty dif) 
 : BoardSize(sz),
   difficulty(dif) {
     Path = s;
@@ -108,7 +108,7 @@ Gamesave::Gamesave(const std::string& s, const u32& sz, const Difficulty& dif)
     BiggestCellCifCount = 1;
     BiggestCell = 1;
     Score = 0;
-    moved = 1;
+    moved = true;
 }
 
 Gamesave::Gamesave(const std::string& s) {
@@ -201,10 +201,10 @@ void Stats::LoadData() {
     is.close();
 }
 
-RGB::RGB(const u8& r, const u8& g, const u8& b) : r(r), g(g), b(b) {}
-RGB::RGB(const u8& c) : r(c), g(c), b(c) {}
+RGB::RGB(u8 r, u8 g, u8 b) : r(r), g(g), b(b) {}
+RGB::RGB(u8 c) : r(c), g(c), b(c) {}
 
-std::wstring getCol(const RGB& rgb) {
+std::wstring getCol(RGB rgb) {
     if(!useCol) return L"";
     std::wstringstream wss;
     wss << L"\033[38;2;" << rgb.r  << L';' << rgb.g << L';' << rgb.b << L'm';

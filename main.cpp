@@ -54,17 +54,17 @@ void printTitleArt() {
 
 bool LoadStats() {
     if(!fs::is_regular_file(StatsPath)) {
-        stats = std::make_shared<Stats>(StatsPath, 0);
-        return 1;
+        stats = std::make_shared<Stats>(StatsPath, false);
+        return true;
     }
 
-    stats = std::make_shared<Stats>(StatsPath, 1);
+    stats = std::make_shared<Stats>(StatsPath, true);
     if(!stats->isValid) {
         std::wcerr << L"Statistics file " << stw(StatsPath) << L" is not valid, would you like to delete it to be able to load in? [Y/n] ";
-        if(std::tolower(getChar()) == 'n') return 0;
+        if(std::tolower(getChar()) == 'n') return false;
         
-        stats = std::make_shared<Stats>(StatsPath, 0);
-    } return 1;
+        stats = std::make_shared<Stats>(StatsPath, false);
+    } return true;
 }
 
 void populateSaves() {
@@ -78,7 +78,7 @@ void populateSaves() {
     } savesSize = j;
 }
 
-void draw(const u32& idx) {
+void draw(const u8& idx) {
     clearScreen();
 
     if(getWidth() > 40) printTitleArt();
@@ -100,7 +100,7 @@ std::string getFirstValidName() {
     return (p / fs::path(DefaultSaveTitle + std::to_string(i) + SaveExtension)).string();
 }
 
-void drawLoad(const u32& idx) {
+void drawLoad(u8 idx) {
     clearScreen();
     for(u32 i=0; i < savesSize; i++) {
         const Gamesave& g = saves[i];
@@ -120,7 +120,7 @@ void launchLoadMenu() {
         return;
     }
 
-    bool f = 1;
+    bool f = true;
     std::wstring title;
     
     while(f) {
@@ -158,7 +158,7 @@ void launchLoadMenu() {
             saves[si].LoadData();
             break;
 
-            case 'q': f = 0; break;
+            case 'q': f = false; break;
             
             case 'y':
             clearScreen();
@@ -207,7 +207,7 @@ void launchLoadMenu() {
                 if(!savesSize) {
                     std::wcout << L"\nNo saves left\nPress any key to continue...";
                     getChar();
-                    f = 0;
+                    f = false;
                 }
             } break;
         }
@@ -217,7 +217,7 @@ void launchLoadMenu() {
 void setDefSettings() {
     boardSz = 4;
     difficulty = Medium;
-    useCol = 1; 
+    useCol = true; 
 }
 
 void loadSettings() {
@@ -242,25 +242,25 @@ bool LoadSettings() {
     if(!fs::is_regular_file(SettingsPath)) {
         setDefSettings();
         saveSettings();
-        return 1;
+        return true;
     }
 
     std::ifstream is (SettingsPath, std::ios::binary);
     if(readBF<u8>(is) == ValidationMagicNumber) {
         is.close();
         loadSettings();
-        return 1;
+        return true;
     } else {
         is.close();
         std::wcerr << L"Settings file " << stw(SettingsPath) << L" is not valid, would you like to delete it to be able to load in? [Y/n] ";
-        if(std::tolower(getChar()) == 'n') return 0;
+        if(std::tolower(getChar()) == 'n') return false;
         
         setDefSettings();
         saveSettings();
-    } return 1;
+    } return true;
 }
 
-void drawSettings(const u8& idx) {
+void drawSettings(u8 idx) {
     clearScreen();
     std::wcout << getCol(!idx?SelectedColor:UnselectedColor) << L"1) Change size: " << boardSz << L' ' << ga(idx,0)
                << getCol(idx==1?SelectedColor:UnselectedColor) << L"2) Change difficulty: " << DIFF[difficulty] << L' ' << ga(idx,1)
@@ -269,7 +269,7 @@ void drawSettings(const u8& idx) {
                << getCol();
 }
 
-void drawDifficulty(const u8& idx) {
+void drawDifficulty(u8 idx) {
     clearScreen();
     std::wcout << getCol(!idx?RGB(73,245,85):UnselectedColor) << L"1) [Potato] " << ga(idx,0)
                << getCol(idx==1?RGB(47,176,56):UnselectedColor) << L"2) [Easy]" << ga(idx,1)
@@ -280,7 +280,7 @@ void drawDifficulty(const u8& idx) {
 
 void launchDifficulties() {
     u8 idx = difficulty;
-    bool f = 1;
+    bool f = true;
 
     while(f) {
         drawDifficulty(idx);
@@ -290,7 +290,7 @@ void launchDifficulties() {
             if(n < 4) {
                 difficulty = (Difficulty)n;
                 saveSettings();
-                f = 0;
+                f = false;
             } else f = n != 4;
         }
             
@@ -308,15 +308,15 @@ void launchDifficulties() {
 
             case ' ':
             if(idx != 4) { difficulty = (Difficulty)idx; saveSettings(); }
-            f = 0;
+            f = false;
             break;
 
-            case 'q': f = 0; break;
+            case 'q': f = false; break;
         }
     }
 }
 
-bool execSettings(const u8& idx) {
+bool execSettings(u8 idx) {
     switch(idx) {
         case 0:
         clearScreen();
@@ -334,14 +334,14 @@ bool execSettings(const u8& idx) {
 
         case 1: launchDifficulties(); break;
         case 2: useCol = !useCol; saveSettings(); break;
-        case 3: return 0;
+        case 3: return false;
     } 
-    return 1;
+    return true;
 }
 
 void launchSettingsMenu() {
     u8 idx = 0;
-    bool f = 1;
+    bool f = true;
     while(f) {
         drawSettings(idx);
         const char c = getChar();
@@ -367,7 +367,7 @@ void launchSettingsMenu() {
     }
 }
 
-bool exec(const u8& idx) {
+bool exec(u8 idx) {
     switch(idx) {
         case 1:
         Game(
@@ -411,8 +411,8 @@ bool exec(const u8& idx) {
         getChar();
         break;
 
-        case 6: return 0;
-    } return 1;
+        case 6: return false;
+    } return true;
 }
 
 i32 main(i32 argc, char **argv) {
@@ -429,7 +429,7 @@ i32 main(i32 argc, char **argv) {
 	#endif
 
     if(!LoadSettings() || !LoadStats()) return 1;
-    bool f = 1;
+    bool f = true;
     
     while(f) {
         draw(idx);
@@ -449,7 +449,7 @@ i32 main(i32 argc, char **argv) {
 
             case ' ': f = exec(idx+1); break;
 
-            case 'q': f = 0; break;
+            case 'q': f = false; break;
         }
     } return 0;
 }

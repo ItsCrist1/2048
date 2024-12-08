@@ -27,7 +27,7 @@ void cleanup(i32);
 const u32 ValidationMagicNumber = 0x2D; // radical of 2048 is ~45.25, 45 in hexadecimal is 0x2D :)
 
 std::wstring stw(const std::string&);
-std::wstring ga(const u32&, const u32);
+std::wstring ga(u32, u32);
 
 u32 getWidth();
 
@@ -41,8 +41,8 @@ void writeBF(std::ofstream&, T);
 struct RGB {
     const u8 r,g,b;
 
-    RGB(const u8& r, const u8& g, const u8& b);
-    RGB(const u8& c=0);
+    RGB(u8 r, u8 g, u8 b);
+    RGB(u8 c=0);
 };
 
 struct Gamesave {
@@ -57,7 +57,7 @@ struct Gamesave {
     bool moved;
     Difficulty difficulty;
     
-    Gamesave(const std::string&, const u32&, const Difficulty&);
+    Gamesave(const std::string&, u32, Difficulty);
     Gamesave(const std::string&);
     void SaveData();
     void LoadData();
@@ -78,7 +78,7 @@ struct Stats {
     void LoadData();
 };
 
-std::wstring getCol(const RGB& rgb);
+std::wstring getCol(RGB rgb);
 std::wstring getCol();
 void flushInputBuffer();
 void clearInputBuffer();

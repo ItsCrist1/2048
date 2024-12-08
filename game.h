@@ -7,8 +7,7 @@
 #include <unordered_map>
 #include <random>
 
-u32 cifCount(const u32& n);
-u32 getBiggest(const u_board&);
+u32 cifCount(u32 n);
 
 class Game {
 public:
@@ -41,11 +40,11 @@ private:
     std::mt19937 rng = std::mt19937(std::random_device{}());
     
     void SaveStats();
-    void DrawBoard();
+    void DrawBoard() const;
     bool Slide(const char&);
-    void Combine_Move(u8*[3], const std::pair<bool,bool>&, std::vector<bool>::reference);
+    void Combine_Move(u8*[3], std::pair<bool,bool>, std::vector<bool>::reference);
     void AddCell();
-    bool IsOver();
-    u32 getCell(const Difficulty&);
-    u32 getRand(const u32& mn=0, const u32& mx=1);
+    bool IsOver() const;
+    u32 getCell(Difficulty);
+    u32 getRand(u32 mn, u32 mx);
 };

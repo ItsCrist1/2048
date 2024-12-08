@@ -11,8 +11,8 @@
 #include <conio.h>
 #endif
 
-u32 cifCount(const u32& n) {
-    return (u32)(n ? std::log10(n)+1 : 1);
+u32 cifCount(u32 n) {
+    return static_cast<u32>(n ? std::log10(n)+1 : 1);
 }
 
 void Game::SaveStats() {
@@ -60,7 +60,7 @@ Game::Game(const Gamesave& save, const std::shared_ptr<Stats>& sp, bool f)
     } SaveStats();
 }
 
-void Game::DrawBoard() {
+void Game::DrawBoard() const {
     const u32 CELL_SZ = s.BiggestCellCifCount + 2;
     clearScreen();
     std::wcout << std::wstring(CELL_SZ/2, L' ') << getCol(TitleColor) << L"2048\n" << getCol() << TBL_CRS[2];
@@ -103,7 +103,7 @@ void Game::DrawBoard() {
 
 bool Game::Slide(const char& c) {
     b_board combined = std::vector<std::vector<bool>>(s.BoardSize, std::vector<bool>(s.BoardSize, 0));
-    s.moved = 0;
+    s.moved = false;
     switch (c) {
         case 'w':
         stats->moves[0]++;
@@ -178,15 +178,15 @@ bool Game::Slide(const char& c) {
             }
         } break;
 
-        default: return 0;
-    } return 1;
+        default: return false;
+    } return true;
 }
 
-void Game::Combine_Move(u8* v[3], const std::pair<bool,bool>& f, std::vector<bool>::reference c) {
+void Game::Combine_Move(u8* v[3], std::pair<bool,bool> f, std::vector<bool>::reference c) {
     if(f.first && *v[0] == *v[1] && !c) {
         (*v[1])++; 
         *v[0] = 0;
-        c = 1;
+        c = true;
 
         if(*v[1] > s.BiggestCell) {
             s.BiggestCell = *v[1];
@@ -194,11 +194,11 @@ void Game::Combine_Move(u8* v[3], const std::pair<bool,bool>& f, std::vector<boo
         }
 
         s.Score += 1<<*v[1];
-        s.moved = 1;
+        s.moved = true;
     } else if(f.second) {
         *v[2] = *v[0];
         *v[0] = 0;
-        s.moved = 1;
+        s.moved = true;
     }
 }
 
@@ -214,26 +214,27 @@ void Game::AddCell() {
     s.newPos = p;
 }
 
-bool Game::IsOver() {
+bool Game::IsOver() const {
     const u32 bszd = s.BoardSize - 1;
     for(u32 y=0; y < s.BoardSize; y++) {
         for(u32 x=0; x < s.BoardSize; x++) {
-            if(!s.board[y][x]) return 0;
-            if((x < bszd && s.board[y][x] == s.board[y][x+1])
-                || (y < bszd && s.board[y][x] == s.board[y+1][x])) return 0;
+            if(!s.board[y][x] || (x < bszd && s.board[y][x] == s.board[y][x+1])
+                || (y < bszd && s.board[y][x] == s.board[y+1][x])) return false;
         }
-    } return 1;
+    } return true;
 }
 
-u32 Game::getCell(const Difficulty& dif) {
+u32 Game::getCell(Difficulty dif) {
     switch(dif) {
         case Potato: return 2;
         case Easy: return getRand(0,6) ? 1 : 2; 
         case Medium: return getRand(0,10) ? 1 : 2;
         case Hard: return 1;
-    } return 0;
+
+        default: return 0;
+    }
 }
 
-u32 Game::getRand(const u32& mn, const u32& mx) {
+u32 Game::getRand(u32 mn, u32 mx) {
     return std::uniform_int_distribution<u32>(mn,mx)(rng);
 }
