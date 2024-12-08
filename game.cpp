@@ -12,7 +12,7 @@
 #endif
 
 u32 cifCount(u32 n) {
-    return static_cast<u32>(n ? std::log10(n)+1 : 1);
+    return static_cast<u32>(n != 0 ? std::log10(n)+1 : 1);
 }
 
 void Game::SaveStats() {
@@ -31,7 +31,7 @@ Game::Game(const Gamesave& save, const std::shared_ptr<Stats>& sp, bool f)
     }
     u8 state = 0;
 
-    while(!state) {
+    while(state == 0) {
         DrawBoard();
         const char c = std::tolower(getChar());
 
@@ -70,7 +70,7 @@ void Game::DrawBoard() const {
     } std::wcout << TBL_CRS[3] << L'\n';
 
     for(u32 y=0; y < s.BoardSize; y++) {
-        if(y) {
+        if(y != 0) {
             std::wcout << TBL_CRS[8];
             for(u32 i=0; i < s.BoardSize; i++)
                 std::wcout << std::wstring(CELL_SZ, TBL_CRS[0]) << TBL_CRS[i==s.BoardSize-1?9:10];
@@ -83,7 +83,7 @@ void Game::DrawBoard() const {
             const u32 PAD_SZ = CELL_SZ - cc;
             std::wcout << std::wstring(PAD_SZ/2+PAD_SZ%2,L' ');
             if(s.newPos.first == x && s.newPos.second == y) std::wcout << getCol(NewColor);
-            else if(n <= BICSZ && n) std::wcout << getCol(COLS.at(n));
+            else if(n <= BICSZ && n != 0) std::wcout << getCol(COLS.at(n));
             if(!n) std::wcout << L' ';
             else std::wcout << n;
             std::wcout << getCol()
@@ -102,18 +102,18 @@ void Game::DrawBoard() const {
 }
 
 bool Game::Slide(const char& c) {
-    b_board combined = std::vector<std::vector<bool>>(s.BoardSize, std::vector<bool>(s.BoardSize, 0));
+    b_board combined = std::vector<std::vector<bool>>(s.BoardSize, std::vector<bool>(s.BoardSize, false));
     s.moved = false;
     switch (c) {
         case 'w':
         stats->moves[0]++;
         for(u32 x=0; x < s.BoardSize; x++) {
             for(u32 y=1; y < s.BoardSize; y++) {
-                if(!s.board[y][x]) continue;
+                if(s.board[y][x] == 0) continue;
                 u32 i = y;
-                while(i && !s.board[i-1][x]) i--;
+                while(i != 0 && s.board[i-1][x] == 0) i--;
 
-                if(i) {
+                if(i != 0) {
                     u8* v[3] = { &s.board[y][x], &s.board[i-1][x], &s.board[i][x] };
                     Combine_Move(v, {1, i != y}, combined[i-1][x]);
                 } else {
@@ -127,9 +127,9 @@ bool Game::Slide(const char& c) {
         stats->moves[1]++;
         for(u32 x=0; x < s.BoardSize; x++) {
             for(u32 y=s.BoardSize-2; y != (u32)-1; y--) {
-                if(!s.board[y][x]) continue;
+                if(s.board[y][x] == 0) continue;
                 u32 i = y;
-                while(i < s.BoardSize-1 && !s.board[i+1][x]) i++;
+                while(i < s.BoardSize-1 && s.board[i+1][x] == 0) i++;
                 
                 if(i < s.BoardSize-1) {
                     u8* v[3] = { &s.board[y][x], &s.board[i+1][x], &s.board[i][x]  };
@@ -145,12 +145,12 @@ bool Game::Slide(const char& c) {
         stats->moves[2]++;
         for(u32 y=0; y < s.BoardSize; y++) {
             for(u32 x=1; x < s.BoardSize; x++) {
-                if(!s.board[y][x]) continue;
+                if(s.board[y][x] == 0) continue;
                 
                 u32 i = x;
-                while(i && !s.board[y][i-1]) i--;
+                while(i != 0 && s.board[y][i-1] == 0) i--;
 
-                if(i) {
+                if(i != 0) {
                     u8* v[3] = { &s.board[y][x], &s.board[y][i - 1], &s.board[y][i] };
                     Combine_Move(v, { 1, i != x }, combined[y][i]);
                 } else {
@@ -164,9 +164,9 @@ bool Game::Slide(const char& c) {
         stats->moves[3]++;
         for(u32 y=0; y < s.BoardSize; y++) {
             for(u32 x=s.BoardSize-2; x != (u32)-1; x--) {
-                if(!s.board[y][x]) continue;
+                if(s.board[y][x] == 0) continue;
                 u32 i = x;
-                while(i < s.BoardSize-1 && !s.board[y][i+1]) i++;
+                while(i < s.BoardSize-1 && s.board[y][i+1] == 0) i++;
                 
                 if(i < s.BoardSize-1) {
                     u8* v[3] = { &s.board[y][x], &s.board[y][i+1], &s.board[y][i] };
@@ -207,7 +207,7 @@ void Game::AddCell() {
 
     for(u32 y=0; y < s.BoardSize; y++)
         for(u32 x=0; x< s.BoardSize; x++)
-            if(!s.board[y][x]) v.push_back(std::pair<u32,u32>(x,y));
+            if(s.board[y][x] == 0) v.emplace_back(std::pair<u32,u32>(x,y));
     
     const std::pair<u32,size_t> p = v[getRand(0,v.size()-1)];
     s.board[p.second][p.first] = getCell(s.difficulty);
@@ -218,7 +218,7 @@ bool Game::IsOver() const {
     const u32 bszd = s.BoardSize - 1;
     for(u32 y=0; y < s.BoardSize; y++) {
         for(u32 x=0; x < s.BoardSize; x++) {
-            if(!s.board[y][x] || (x < bszd && s.board[y][x] == s.board[y][x+1])
+            if(s.board[y][x] == 0 || (x < bszd && s.board[y][x] == s.board[y][x+1])
                 || (y < bszd && s.board[y][x] == s.board[y+1][x])) return false;
         }
     } return true;

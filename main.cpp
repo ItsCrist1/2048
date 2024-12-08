@@ -84,7 +84,7 @@ void draw(const u8& idx) {
     if(getWidth() > 40) printTitleArt();
     else std::wcout << getCol(ValueColor) << L"--- 2048 ---\n\n";
 
-    std::wcout << getCol(!idx?SelectedColor:UnselectedColor) << L"1) New " << ga(idx,0)
+    std::wcout << getCol(idx==0?SelectedColor:UnselectedColor) << L"1) New " << ga(idx,0)
                << getCol(idx==1?SelectedColor:UnselectedColor) << L"2) Load " << ga(idx,1)
                << getCol(idx==2?SelectedColor:UnselectedColor) << L"3) Settings " << ga(idx,2)
                << getCol(idx==3?SelectedColor:UnselectedColor) << L"4) Stats " << ga(idx,3)
@@ -134,7 +134,7 @@ void launchLoadMenu() {
         if(const u32 cd=c-'0'; 
             std::isdigit(c) && cd > 0
             && cd <= savesSize) {
-            Game(saves[cd-1], stats, 0);
+            Game(saves[cd-1], stats, false);
             saves[cd-1].LoadData();
             continue;
         }
@@ -145,7 +145,7 @@ void launchLoadMenu() {
         switch(c) {
             case 'w':
             case 'a':
-            si += si ? -1 : savesSize - 1; 
+            si += si != 0 ? -1 : savesSize - 1; 
             break;
 
             case 's':
@@ -154,7 +154,7 @@ void launchLoadMenu() {
             break;
 
             case ' ': 
-            Game(saves[si], stats, 0); 
+            Game(saves[si], stats, false); 
             saves[si].LoadData();
             break;
 
@@ -204,7 +204,7 @@ void launchLoadMenu() {
                 savesSize--;
                 if(si == savesSize) si--;
 
-                if(!savesSize) {
+                if(savesSize == 0) {
                     std::wcout << L"\nNo saves left\nPress any key to continue...";
                     getChar();
                     f = false;
@@ -262,7 +262,7 @@ bool LoadSettings() {
 
 void drawSettings(u8 idx) {
     clearScreen();
-    std::wcout << getCol(!idx?SelectedColor:UnselectedColor) << L"1) Change size: " << boardSz << L' ' << ga(idx,0)
+    std::wcout << getCol(idx==0?SelectedColor:UnselectedColor) << L"1) Change size: " << boardSz << L' ' << ga(idx,0)
                << getCol(idx==1?SelectedColor:UnselectedColor) << L"2) Change difficulty: " << DIFF[difficulty] << L' ' << ga(idx,1)
                << getCol(idx==2?SelectedColor:UnselectedColor) << L"3) Color Support: " << (useCol?L"On ":L"Off ") << ga(idx,2)
                << getCol(idx==3?SelectedColor:UnselectedColor) <<  L"4) Back " << ga(idx,3)
@@ -271,7 +271,7 @@ void drawSettings(u8 idx) {
 
 void drawDifficulty(u8 idx) {
     clearScreen();
-    std::wcout << getCol(!idx?RGB(73,245,85):UnselectedColor) << L"1) [Potato] " << ga(idx,0)
+    std::wcout << getCol(idx==0?RGB(73,245,85):UnselectedColor) << L"1) [Potato] " << ga(idx,0)
                << getCol(idx==1?RGB(47,176,56):UnselectedColor) << L"2) [Easy]" << ga(idx,1)
                << getCol(idx==2?RGB(190,232,3):UnselectedColor) << L"3) [Medium]" << ga(idx,2)
                << getCol(idx==3?RGB(227,40,11):UnselectedColor) << L"4) [Hard] " << ga(idx,3)
@@ -298,7 +298,7 @@ void launchDifficulties() {
         switch(c) {
             case 'w':
             case 'd':
-            idx += idx ? -1 : 4;
+            idx += idx != 0 ? -1 : 4;
             break;
 
             case 's':
@@ -353,7 +353,7 @@ void launchSettingsMenu() {
 
         switch(c) {
             case 'w':
-            case 'a': idx += idx ? -1 : 3; 
+            case 'a': idx += idx != 0 ? -1 : 3; 
             break;
 
             case 's':
@@ -372,7 +372,7 @@ bool exec(u8 idx) {
         case 1:
         Game(
              Gamesave(getFirstValidName(),boardSz,difficulty), 
-             stats, 1);
+             stats, true);
         break;
 
         case 2:
@@ -442,7 +442,7 @@ i32 main(i32 argc, char **argv) {
 
         switch(c) {
             case 'w':
-            case 'a': idx += idx ? -1 : 5; break;
+            case 'a': idx += idx != 0 ? -1 : 5; break;
 
             case 's':
             case 'd': idx += idx < 5 ? 1 : -5; break;
