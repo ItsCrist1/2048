@@ -384,7 +384,7 @@ bool exec(u8 idx) {
         break;
 
         case 4:
-        std::wcout << L"Slides:\n"
+        std::wcout << L"\nSlides:\n"
                    << L"Right: " << getCol(ValueColor) << stats->moves[3]
                    << getCol() << L" Left: " << getCol(ValueColor) << stats->moves[2]
                    << getCol() << L"\nUp: " << getCol(ValueColor) << stats->moves[0]

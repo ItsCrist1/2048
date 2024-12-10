@@ -1,5 +1,5 @@
 # 2048
-A pretty fast cross-platform C++ terminal implementation of the classic game [2048](https://en.m.wikipedia.org/wiki/2048_(video_game)).
+A fast cross-platform C++ terminal implementation of the classic game [2048](https://en.m.wikipedia.org/wiki/2048_(video_game)).
 
 # Features
 - Saving and loading game states with custom settings
@@ -16,11 +16,19 @@ Linux has the best compatibility though (most of the code was written in termux)
 Requirements: git (or gh) and cmake
 ```
 git clone https://www.github.com/ItsCrist1/2048.git
+mkdir 2048/bin
 cd 2048/bin
 cmake ..
 cd ..
 ./exec.sh
 ```
+
+# Screenshots
+
+## Android
+![Android Stats](./screenshots/android/stats.png)
+![Android Game](./screenshots/android/game.png)
+![Android Saves](./screenshots/android/saves.png)
 
 # Contact
 You can contact me at cristi9270@gmail.com or cristi123612 on discord.
