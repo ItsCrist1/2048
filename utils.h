@@ -15,7 +15,7 @@ using i32 = int32_t;
 using u_board = std::vector<std::vector<u8>>;
 using b_board = std::vector<std::vector<bool>>;
 
-extern bool useCol;
+extern bool useCol, useTitle;
 
 enum Difficulty { Potato, Easy, Medium, Hard };
 
@@ -30,8 +30,9 @@ std::wstring stw(const std::string&);
 std::wstring ga(u32, u32);
 
 u32 getWidth();
-
 void clearScreen();
+
+void outputTitle();
 
 template <typename T>
 T readBF(std::ifstream&);
@@ -44,6 +45,8 @@ struct RGB {
     RGB(u8 r, u8 g, u8 b);
     RGB(u8 c=0);
 };
+
+const RGB ValueColor = RGB(155,219,86);
 
 struct Gamesave {
     std::string Title, Path;

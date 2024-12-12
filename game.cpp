@@ -63,7 +63,9 @@ Game::Game(const Gamesave& save, const std::shared_ptr<Stats>& sp, bool f)
 void Game::DrawBoard() const {
     const u32 CELL_SZ = s.BiggestCellCifCount + 2;
     clearScreen();
-    std::wcout << std::wstring(CELL_SZ/2, L' ') << getCol(TitleColor) << L"2048\n" << getCol() << TBL_CRS[2];
+    outputTitle();
+
+    std::wcout << getCol() << TBL_CRS[2];
     for(u32 i=0; i < s.BoardSize; i++) {
         std::wcout << std::wstring(CELL_SZ, TBL_CRS[0]);
         if (i < s.BoardSize-1) std::wcout << TBL_CRS[7];

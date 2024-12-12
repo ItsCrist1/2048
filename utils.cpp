@@ -36,7 +36,8 @@ void cleanup(i32 sig) {
 
 #endif 
 
-bool useCol = true;
+bool useCol = true, useTitle = true;
+const u8 MinTitleWidth = 40;
 
 std::wstring stw(const std::string& s) {
     return {s.begin(), s.end()};
@@ -68,6 +69,23 @@ void clearScreen() {
     #else
     std::wcout << L"\033[2J\033[H";
     #endif
+}
+
+void outputTitle() {
+    if(!useTitle || getWidth() < MinTitleWidth) {
+        std::wcout << getCol(ValueColor) << L"--- 2048 ---\n\n";
+        return;
+    }
+
+    std::wcout << getCol(ValueColor)
+               << LR"(  /$$$$$$   /$$$$$$  /$$   /$$  /$$$$$$ )" << L'\n'
+               << LR"( /$$__  $$ /$$$_  $$| $$  | $$ /$$__  $$)" << L'\n'
+               << LR"(|__/  \ $$| $$$$\ $$| $$  | $$| $$  \ $$)" << L'\n'
+               << LR"(  /$$$$$$/| $$ $$ $$| $$$$$$$$|  $$$$$$/)" << L'\n'
+               << LR"( /$$____/ | $$\ $$$$|_____  $$ >$$__  $$)" << L'\n'
+               << LR"(| $$      | $$ \ $$$      | $$| $$  \ $$)" << L'\n'
+               << LR"(| $$$$$$$$|  $$$$$$/      | $$|  $$$$$$/)" << L'\n'
+               << LR"(|________/ \______/       |__/ \______/ )" << L"\n\n";
 }
 
 template u8 readBF<u8>(std::ifstream& is);

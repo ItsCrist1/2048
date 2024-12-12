@@ -19,7 +19,6 @@
 
 const RGB SelectedColor = RGB(245,212,66);
 const RGB UnselectedColor = RGB(112,109,96);
-const RGB ValueColor = RGB(155,219,86);
 
 const std::string SaveDirectory = "saves";
 const std::string DefaultSaveTitle = "Unnamed-Save-";
@@ -39,18 +38,6 @@ u32 boardSz;
 Difficulty difficulty;
 
 std::shared_ptr<Stats> stats;
-
-void printTitleArt() {
-    std::wcout << getCol(ValueColor)
-               << LR"(  /$$$$$$   /$$$$$$  /$$   /$$  /$$$$$$ )" << L'\n'
-               << LR"( /$$__  $$ /$$$_  $$| $$  | $$ /$$__  $$)" << L'\n'
-               << LR"(|__/  \ $$| $$$$\ $$| $$  | $$| $$  \ $$)" << L'\n'
-               << LR"(  /$$$$$$/| $$ $$ $$| $$$$$$$$|  $$$$$$/)" << L'\n'
-               << LR"( /$$____/ | $$\ $$$$|_____  $$ >$$__  $$)" << L'\n'
-               << LR"(| $$      | $$ \ $$$      | $$| $$  \ $$)" << L'\n'
-               << LR"(| $$$$$$$$|  $$$$$$/      | $$|  $$$$$$/)" << L'\n'
-               << LR"(|________/ \______/       |__/ \______/ )" << L"\n\n";
-}
 
 bool LoadStats() {
     if(!fs::is_regular_file(StatsPath)) {
@@ -81,8 +68,7 @@ void populateSaves() {
 void draw(const u8& idx) {
     clearScreen();
 
-    if(getWidth() > 40) printTitleArt();
-    else std::wcout << getCol(ValueColor) << L"--- 2048 ---\n\n";
+    outputTitle();
 
     std::wcout << getCol(idx==0?SelectedColor:UnselectedColor) << L"1) New " << ga(idx,0)
                << getCol(idx==1?SelectedColor:UnselectedColor) << L"2) Load " << ga(idx,1)
@@ -102,6 +88,8 @@ std::string getFirstValidName() {
 
 void drawLoad(u8 idx) {
     clearScreen();
+    outputTitle();
+
     for(u32 i=0; i < savesSize; i++) {
         const Gamesave& g = saves[i];
         std::wcout << getCol(idx==i?SelectedColor:UnselectedColor)
@@ -217,7 +205,7 @@ void launchLoadMenu() {
 void setDefSettings() {
     boardSz = 4;
     difficulty = Medium;
-    useCol = true; 
+    useCol = useTitle = true; 
 }
 
 void loadSettings() {
@@ -226,6 +214,7 @@ void loadSettings() {
     boardSz = readBF<u32>(is);
     difficulty = readBF<Difficulty>(is);
     useCol = is.get() != 0;
+    useTitle = is.get() != 0;
     is.close();
 }
 
@@ -235,6 +224,7 @@ void saveSettings() {
     writeBF<u32>(os, boardSz);
     writeBF<Difficulty>(os, difficulty);
     writeBF<bool>(os, useCol);
+    writeBF<bool>(os, useTitle);
     os.close();
 }
 
@@ -262,10 +252,13 @@ bool LoadSettings() {
 
 void drawSettings(u8 idx) {
     clearScreen();
+    outputTitle();
+
     std::wcout << getCol(idx==0?SelectedColor:UnselectedColor) << L"1) Change size: " << boardSz << L' ' << ga(idx,0)
                << getCol(idx==1?SelectedColor:UnselectedColor) << L"2) Change difficulty: " << DIFF[difficulty] << L' ' << ga(idx,1)
                << getCol(idx==2?SelectedColor:UnselectedColor) << L"3) Color Support: " << (useCol?L"On ":L"Off ") << ga(idx,2)
-               << getCol(idx==3?SelectedColor:UnselectedColor) <<  L"4) Back " << ga(idx,3)
+               << getCol(idx==3?SelectedColor:UnselectedColor) << L"4) Draw Full Title: "<< (useTitle?L"Yes ":L"No ") << ga(idx,3)
+               << getCol(idx==4?SelectedColor:UnselectedColor) <<  L"5) Back " << ga(idx,4)
                << getCol();
 }
 
@@ -334,7 +327,8 @@ bool execSettings(u8 idx) {
 
         case 1: launchDifficulties(); break;
         case 2: useCol = !useCol; saveSettings(); break;
-        case 3: return false;
+        case 3: useTitle = !useTitle; saveSettings(); break;
+        case 4: return false;
     } 
     return true;
 }
@@ -353,11 +347,11 @@ void launchSettingsMenu() {
 
         switch(c) {
             case 'w':
-            case 'a': idx += idx != 0 ? -1 : 3; 
+            case 'a': idx += idx != 0 ? -1 : 4; 
             break;
 
             case 's':
-            case 'd': idx += idx < 3 ? 1 : -3;
+            case 'd': idx += idx < 4 ? 1 : -4;
             break;
             
             case ' ': f = execSettings(idx); break;
