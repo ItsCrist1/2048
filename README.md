@@ -38,11 +38,20 @@ cd 2048
 # Screenshots
 
 ## Android
-![Android Menu](./screenshots/android/menu.png)
-![Android Settings](./screenshots/android/settings.png)
-![Android Stats](./screenshots/android/stats.png)
-![Android Game](./screenshots/android/game.png)
-![Android Saves](./screenshots/android/saves.png)
+
+<table>
+  <tr>
+    <td><img src="./screenshots/android/menu.png" alt="Android Menu" width="250"/></td>
+    <td><img src="./screenshots/android/settings.png" alt="Android Settings" width="250"/></td>
+  </tr>
+  <tr>
+    <td><img src="./screenshots/android/stats.png" alt="Android Stats" width="250"/></td>
+    <td><img src="./screenshots/android/game.png" alt="Android Game" width="250"/></td>
+  </tr>
+  <tr>
+    <td><img src="./screenshots/android/saves.png" alt="Android Saves" width="250"/></td>
+  </tr>
+</table>
 
 ## Arch Linux
 ![Arch Linux Menu](./screenshots/arch/menu.png)
