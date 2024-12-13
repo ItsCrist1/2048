@@ -19,16 +19,22 @@ Works great with both Windows (not sure about windows 8 or older) and UNIX syste
 Linux has the best compatibility though (most of the code was written in termux).
 
 # Building
-Requirements: git (or gh) and cmake
-```
+
+## Requirements
+- git or gh
+- cmake (3.0 or newer)
+
+## First time
+```bash
 git clone https://www.github.com/ItsCrist1/2048.git
-mkdir 2048/bin
-cd 2048/bin
-cmake ..
-cd ..
-./exec.sh
+cd 2048
+./setup.sh
 ```
 
+## Afterwards
+```bash
+./exec.sh
+```
 # Screenshots
 
 ## Android
