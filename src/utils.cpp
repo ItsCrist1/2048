@@ -9,7 +9,7 @@
 #include <conio.h>
 #undef RGB
 #else
-#include <termio.h>
+#include <termio.h>5
 #include <csignal>
 #include <unistd.h>
 

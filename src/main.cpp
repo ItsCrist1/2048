@@ -20,11 +20,12 @@
 const RGB SelectedColor = RGB(245,212,66);
 const RGB UnselectedColor = RGB(112,109,96);
 
-const std::string SaveDirectory = "saves";
+const fs::path SaveDirectory = "saves";
+const fs::path DataDirectory = "data";
 const std::string DefaultSaveTitle = "Unnamed-Save-";
 const std::string SaveExtension = ".dat";
-const std::string SettingsPath = "settings.dat";
-const std::string StatsPath = "stats.dat";
+const std::string SettingsPath = (SaveDirectory / "settings").concat(SaveExtension);
+const std::string StatsPath = (SaveDirectory / "stats").concat(SaveExtension);
 
 const u32 MaxBoardSz = 128;
 
@@ -65,7 +66,7 @@ void populateSaves() {
     } savesSize = j;
 }
 
-void draw(const u8& idx) {
+void draw(u8 idx) {
     clearScreen();
 
     outputTitle();
@@ -80,10 +81,9 @@ void draw(const u8& idx) {
 }
 
 std::string getFirstValidName() {
-    fs::path p (SaveDirectory);
     u32 i = 1;
-    for(; fs::is_regular_file(p/fs::path(DefaultSaveTitle+std::to_string(i)+SaveExtension)); i++);
-    return (p / fs::path(DefaultSaveTitle + std::to_string(i) + SaveExtension)).string();
+    for(; fs::is_regular_file(SaveDirectory / (DefaultSaveTitle + std::to_string(i) + SaveExtension)); i++);
+    return (SaveDirectory / (DefaultSaveTitle + std::to_string(i) + SaveExtension)).string();
 }
 
 void drawLoad(u8 idx) {
@@ -161,7 +161,7 @@ void launchLoadMenu() {
             std::wcout << L"What do you want to rename " << title << L" to? ";
             std::cin >> s;
             clearInputBuffer();
-            p = (fs::path(SaveDirectory) / fs::path(s + SaveExtension)).string();
+            p = (SaveDirectory / fs::path(s + SaveExtension)).string();
             if(!fs::exists(p)) {
                 fs::rename(gs.Path, p);
                 gs.Path = p;
